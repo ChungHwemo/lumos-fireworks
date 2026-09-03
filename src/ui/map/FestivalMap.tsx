@@ -141,9 +141,8 @@ export function FestivalMap({
       if (firstStyle) {
         firstStyle = false;
         map.resize();
-        // 발사 앵커가 있으면 그 위를 잡는다. bounds 를 맞추면 카메라가 앵커에서 밀려나
-        // 불꽃이 능선 뒤로 들어가 깊이 테스트에 잘린다.
-        if (!state.current.launch) fitView(map, viewPoints(state.current));
+        // bounds 를 맞추지 않는다. fitBounds 는 평면 기준이라 pitch 78 의 사다리꼴 가시영역에서
+        // 어긋나고, 시트가 지도 오른쪽을 덮는 것도 모른다. 앵커든 지구 대략 좌표든 중심으로 잡는다.
         if (orbiting) orbitStep();
       }
       if (!map.getLayer(FIREWORKS_LAYER_ID)) {
@@ -391,31 +390,6 @@ function drawOverlays(
   if (focus) {
     map.easeTo({ center: [focus.lng, focus.lat], zoom: Math.max(map.getZoom(), 15) });
   }
-}
-
-function viewPoints(props: Props): Coord[] {
-  const points: Coord[] = [];
-  if (props.launch) points.push(props.launch);
-  else if (props.area) points.push(props.area.coord);
-  if (props.station) points.push(props.station);
-  return points;
-}
-
-function fitView(map: maplibregl.Map, points: Coord[]) {
-  if (points.length === 0) return;
-  if (points.length === 1) {
-    map.jumpTo({ center: [points[0].lng, points[0].lat] });
-    return;
-  }
-  const lngs = points.map((point) => point.lng);
-  const lats = points.map((point) => point.lat);
-  map.fitBounds(
-    [
-      [Math.min(...lngs), Math.min(...lats)],
-      [Math.max(...lngs), Math.max(...lats)],
-    ],
-    { padding: 72, maxZoom: 14, duration: 0 },
-  );
 }
 
 function pin(
