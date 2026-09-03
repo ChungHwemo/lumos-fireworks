@@ -263,6 +263,8 @@ dd { margin: 0; }
   line-height: 1;
   white-space: nowrap;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .pin svg { flex: 0 0 auto; }
 .pin-open,
@@ -273,6 +275,7 @@ dd { margin: 0; }
   padding: 0;
 }
 .pin-launch { background: rgba(255, 106, 61, 0.82); }
+.pin-approx { background: rgba(244, 241, 234, 0.78); }
 .pin-share { background: rgba(244, 241, 234, 0.82); }
 .pin-station { background: rgba(154, 215, 255, 0.86); }
 .pin-open { background: rgba(216, 245, 154, 0.82); }
