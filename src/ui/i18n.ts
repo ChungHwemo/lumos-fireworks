@@ -57,7 +57,6 @@ const ko = {
   no3d: "화면 언어는 한국어·日本語·English입니다. 번역이 없는 메모는 한국어로 남습니다.",
   gsiCredit: "지도 배경은 국토지리원 地理院タイル입니다.",
   here: "현위치",
-  launch: "발사 앵커",
   launchEstimate: "발사 좌표는 추정 앵커입니다.",
   areaApprox: "정확한 좌표는 없고, 지구·시 대략 위치입니다.",
   back: "목록",
@@ -88,6 +87,7 @@ const ko = {
   legendSpotOpen: "설 수 있음",
   legendSpotPaid: "유료 게이트",
   legendSpotBlocked: "통제로 못 섬",
+  legendSpotVehicle: "차량 규제, 걸어서 접근",
   legendSpotNumber: "번호는 아래 목록 순서입니다.",
   pitch: "고각",
 } as const;
@@ -149,7 +149,6 @@ const ja: Record<keyof typeof ko, string> = {
   no3d: "画面は한국어・日本語・Englishです。未翻訳のメモは韓国語のままです。",
   gsiCredit: "地図背景は国土地理院の地理院タイルです。",
   here: "現在地",
-  launch: "打上アンカー",
   launchEstimate: "打上座標は推定アンカーです。",
   areaApprox: "正確な座標はなく、地区・市の目安位置です。",
   back: "一覧",
@@ -180,6 +179,7 @@ const ja: Record<keyof typeof ko, string> = {
   legendSpotOpen: "立てる",
   legendSpotPaid: "有料ゲート",
   legendSpotBlocked: "規制で立てない",
+  legendSpotVehicle: "車両規制、徒歩は可",
   legendSpotNumber: "番号は下のリストの順です。",
   pitch: "仰角",
 };
@@ -242,7 +242,6 @@ const en: Record<keyof typeof ko, string> = {
   no3d: "The UI is Korean, Japanese, or English. Notes without a translation stay in Korean.",
   gsiCredit: "Basemap: GSI tiles (Geospatial Information Authority of Japan).",
   here: "You are here",
-  launch: "Launch anchor",
   launchEstimate: "Launch coordinates are an estimated anchor.",
   areaApprox: "No exact coordinates. District or city approximate area only.",
   back: "List",
@@ -273,6 +272,7 @@ const en: Record<keyof typeof ko, string> = {
   legendSpotOpen: "Can stand here",
   legendSpotPaid: "Paid gate",
   legendSpotBlocked: "Blocked by control",
+  legendSpotVehicle: "Cars restricted, walk in",
   legendSpotNumber: "Numbers follow the list below.",
   pitch: "Pitch",
 };

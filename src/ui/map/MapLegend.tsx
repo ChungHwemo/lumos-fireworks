@@ -33,6 +33,9 @@ export function MapLegend() {
         <li>
           <span className="pin pin-blocked legend-chip">1</span> {t.legendSpotBlocked}
         </li>
+        <li>
+          <span className="pin pin-vehicle legend-chip">1</span> {t.legendSpotVehicle}
+        </li>
       </ul>
       <p className="note">{t.legendSpotNumber}</p>
     </details>
