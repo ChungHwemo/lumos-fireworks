@@ -7,6 +7,7 @@ import { unknownLaunchOffset } from "../../domain/burst.ts";
 import { circlePolygon } from "./circle.ts";
 import { createFireworksLayer, FIREWORKS_LAYER_ID } from "./fireworks-layer.ts";
 import { gsiStyle, type GsiLayer } from "./gsi-style.ts";
+import { pinIcon, type PinKind } from "./pin-icons.ts";
 
 export type HeatPoint = {
   id: string;
@@ -341,47 +342,31 @@ function drawOverlays(
 
   if (props.launch) {
     markers.current.push(
-      pin(
-        map,
-        props.launch,
-        "pin pin-launch",
-        props.labels?.launch ?? "발",
-        props.labels?.launchAria ?? "발사 앵커",
-      ),
+      pin(map, props.launch, "pin pin-launch", "launch",
+        props.labels?.launch ?? "발사 지점",
+        props.labels?.launchAria ?? "발사 지점"),
     );
   } else if (props.area && props.area.precision !== "launch") {
     markers.current.push(
-      pin(
-        map,
-        props.area.coord,
-        "pin pin-approx",
-        props.labels?.approx ?? "대략",
-        props.labels?.approxAria ?? props.labels?.approx ?? "대략 위치",
-      ),
+      pin(map, props.area.coord, "pin pin-approx", "launchUnknown",
+        props.labels?.approx ?? "발사 지점 미확정",
+        props.labels?.approxAria ?? props.labels?.approx ?? "발사 지점 미확정"),
     );
   }
 
   if (props.station) {
     markers.current.push(
-      pin(
-        map,
-        props.station,
-        "pin pin-station",
-        props.labels?.station ?? "역",
-        props.labels?.stationAria ?? props.labels?.station ?? "가까운 역",
-      ),
+      pin(map, props.station, "pin pin-station", "station",
+        props.labels?.station ?? "가까운 역",
+        props.labels?.stationAria ?? props.labels?.station ?? "가까운 역"),
     );
   }
 
   if (props.sharePin) {
     markers.current.push(
-      pin(
-        map,
-        props.sharePin,
-        "pin pin-share",
-        props.labels?.share ?? "공",
-        props.labels?.shareAria ?? "공유 좌표",
-      ),
+      pin(map, props.sharePin, "pin pin-share", "share",
+        props.labels?.share ?? "공유 위치",
+        props.labels?.shareAria ?? "공유 위치"),
     );
   }
 
@@ -435,13 +420,18 @@ function pin(
   map: maplibregl.Map,
   coord: Coord,
   className: string,
+  kind: PinKind,
   label: string,
   aria: string,
 ) {
   const el = document.createElement("button");
   el.className = className;
   el.type = "button";
-  el.textContent = label;
+  // 마크업은 우리 상수뿐이다. 사용자 입력이 들어오지 않는다.
+  el.innerHTML = pinIcon(kind);
+  const text = document.createElement("span");
+  text.textContent = label;
+  el.appendChild(text);
   el.setAttribute("aria-label", aria);
   return new maplibregl.Marker({ element: el }).setLngLat([coord.lng, coord.lat]).addTo(map);
 }

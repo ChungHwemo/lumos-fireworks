@@ -96,7 +96,7 @@ export function FestivalPage() {
           mapAria: t.mapAria,
           launchAria: t.launch,
           shareAria: t.share,
-          approx: t.pinApprox,
+          approx: t.pinLaunchUnknown,
           approxAria: areaLabel(area, lang),
           station: t.pinStation,
           stationAria: stationNames[lang],

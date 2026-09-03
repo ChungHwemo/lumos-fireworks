@@ -248,28 +248,31 @@ dd { margin: 0; }
 .lang-switch span { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
 .pin {
-  width: 28px;
+  min-width: 28px;
   height: 28px;
   border-radius: var(--r2);
   border: 1px solid rgba(255, 255, 255, 0.55);
   color: #1a0b06;
   font-size: 11px;
   font-weight: 700;
-  display: grid;
-  place-items: center;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 6px;
   line-height: 1;
+  white-space: nowrap;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.pin svg { flex: 0 0 auto; }
+.pin-open,
+.pin-paid,
+.pin-vehicle,
+.pin-blocked {
+  width: 28px;
+  padding: 0;
 }
 .pin-launch { background: rgba(255, 106, 61, 0.82); }
-.pin-approx {
-  background: rgba(244, 241, 234, 0.78);
-  width: auto;
-  min-width: 28px;
-  padding: 0 6px;
-}
 .pin-share { background: rgba(244, 241, 234, 0.82); }
 .pin-station { background: rgba(154, 215, 255, 0.86); }
 .pin-open { background: rgba(216, 245, 154, 0.82); }
