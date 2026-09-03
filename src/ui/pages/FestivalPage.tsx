@@ -7,12 +7,17 @@ import {
   seatsFor,
   seriesDates,
 } from "../../data/catalog.ts";
+import { loadReports } from "../../data/reports.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
+import { crowdHeat, listReports } from "../../domain/report.ts";
+import { filterSpotsByText } from "../../domain/spot.ts";
 import { weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
 import type { GsiLayer } from "../map/gsi-style.ts";
-import { parseShareCoord, shareUrl } from "../share.ts";
+import { parseShareCoord } from "../share.ts";
+import { ShareButton } from "../ShareButton.tsx";
+import { ReportForm, reportKindLabel } from "./ReportForm.tsx";
 
 export function FestivalPage() {
   const { festivalId = "" } = useParams();
@@ -23,13 +28,24 @@ export function FestivalPage() {
   const tab = params.get("tab") ?? "event";
   const layer = (params.get("map") === "std" ? "std" : "pale") as GsiLayer;
   const showControls = params.get("ctl") !== "0";
+  const showCrowd = params.get("crowd") !== "0";
   const sharePin = parseShareCoord(params);
-  const [toast, setToast] = useState("");
+  const [q, setQ] = useState("");
+  const [reports, setReports] = useState(loadReports);
 
   const spots = useMemo(() => decoratedSpots(festivalId), [festivalId]);
+  const visibleSpots = useMemo(() => filterSpotsByText(spots, q), [spots, q]);
   const controls = useMemo(() => controlsFor(festivalId), [festivalId]);
   const seats = useMemo(() => seatsFor(festivalId), [festivalId]);
   const dates = festival ? seriesDates(festival.seriesId) : [];
+  const festivalReports = useMemo(
+    () => listReports(reports, { festivalId }),
+    [reports, festivalId],
+  );
+  const heat = useMemo(
+    () => crowdHeat(spots, festivalReports),
+    [spots, festivalReports],
+  );
 
   if (!festival) return <Navigate to="/" replace />;
 
@@ -38,15 +54,19 @@ export function FestivalPage() {
     setParams(params, { replace: true });
   };
 
+  const pin = festival.launch ?? spots[0] ?? { lng: 139.7, lat: 36.2 };
+
   return (
     <div className="split">
       <FestivalMap
         launch={festival.launch}
-        spots={spots}
+        spots={visibleSpots}
         controls={controls}
         sharePin={sharePin}
+        heat={heat}
         showControls={showControls && tab !== "settings"}
         showSpots={tab !== "settings"}
+        showCrowd={showCrowd && tab !== "settings"}
         layer={layer}
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
         onMapClick={(coord) => {
@@ -60,8 +80,9 @@ export function FestivalPage() {
           ← {t.back}
         </Link>
         <p className="kicker">
-          {festival.date} ({weekday(festival.date, lang)}) · {festival.startTime}–
-          {festival.endTime}
+          {festival.date}
+          {festival.dateEnd ? `–${festival.dateEnd}` : ""} (
+          {weekday(festival.date, lang)}) · {festival.startTime}–{festival.endTime}
           {isFestivalDay(festival, new Date()) ? " · TODAY" : ""}
         </p>
         <h1>
@@ -69,19 +90,23 @@ export function FestivalPage() {
         </h1>
         <p className="disclaimer">{festival.disclaimerKo}</p>
         <nav className="tabs" aria-label="sections">
-          <button type="button" aria-current={tab === "event" ? "true" : undefined} onClick={() => setTab("event")}>
+          <Tab current={tab} id="event" onClick={setTab}>
             {t.tabEvent}
-          </button>
-          <button type="button" aria-current={tab === "spots" ? "true" : undefined} onClick={() => setTab("spots")}>
+          </Tab>
+          <Tab current={tab} id="spots" onClick={setTab}>
             {t.tabSpots}
-          </button>
-          <button type="button" aria-current={tab === "settings" ? "true" : undefined} onClick={() => setTab("settings")}>
+          </Tab>
+          <Tab current={tab} id="reports" onClick={setTab}>
+            {t.tabReports}
+          </Tab>
+          <Tab current={tab} id="settings" onClick={setTab}>
             {t.tabSettings}
-          </button>
+          </Tab>
         </nav>
 
         {tab === "event" && (
           <div className="stack">
+            <ShareButton title={festival.nameKo} />
             <p>
               <strong>{t.venue}</strong> {festival.venueKo}{" "}
               <span lang="ja">{festival.venueJa}</span>
@@ -149,6 +174,16 @@ export function FestivalPage() {
 
         {tab === "spots" && (
           <div className="stack">
+            <ShareButton title={festival.nameKo} />
+            <label>
+              {t.searchSpots}
+              <input
+                type="search"
+                value={q}
+                onChange={(event) => setQ(event.target.value)}
+                placeholder={t.searchSpots}
+              />
+            </label>
             <div className="toggles">
               <label>
                 <input
@@ -161,16 +196,54 @@ export function FestivalPage() {
                 />
                 {t.overlayControls}
               </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showCrowd}
+                  onChange={(e) => {
+                    params.set("crowd", e.target.checked ? "1" : "0");
+                    setParams(params, { replace: true });
+                  }}
+                />
+                {t.overlayCrowd}
+              </label>
             </div>
-            {spots.length === 0 ? (
+            <p className="note">{t.notLiveCrowd}</p>
+            {visibleSpots.length === 0 ? (
               <p>{t.noSpots}</p>
             ) : (
               <ol className="spot-list">
-                {spots.map((spot) => (
+                {visibleSpots.map((spot) => (
                   <li key={spot.id}>
                     <Link to={`/e/${festival.id}/p/${spot.id}`}>
                       <SpotLine spot={spot} t={t} />
                     </Link>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
+
+        {tab === "reports" && (
+          <div className="stack">
+            <p className="note">{t.reportLocal}</p>
+            <ReportForm
+              festivalId={festival.id}
+              spotId={null}
+              lng={pin.lng}
+              lat={pin.lat}
+              onSaved={setReports}
+            />
+            {festivalReports.length === 0 ? (
+              <p>{t.reportEmpty}</p>
+            ) : (
+              <ol className="report-list">
+                {festivalReports.map((report) => (
+                  <li key={report.id}>
+                    <strong>{reportKindLabel(report.kind, t)}</strong>
+                    <p>{report.body}</p>
+                    <p className="meta">{report.createdAt}</p>
                   </li>
                 ))}
               </ol>
@@ -190,6 +263,7 @@ export function FestivalPage() {
                 English
               </button>
             </p>
+            <p>{t.no3d}</p>
             <p>
               <strong>{t.overlaySpots}</strong>
               <br />
@@ -214,32 +288,40 @@ export function FestivalPage() {
                 {t.mapStd}
               </button>
             </p>
-            <p>{t.no3d}</p>
             <p>
               {t.gsiCredit}{" "}
               <a href="https://maps.gsi.go.jp/development/ichiran.html" rel="noreferrer" target="_blank">
                 地理院タイル
               </a>
             </p>
-            <button
-              type="button"
-              className="primary"
-              onClick={async () => {
-                const result = await shareUrl(
-                  festival.nameKo,
-                  t.shareCopy,
-                  window.location.href,
-                );
-                if (result === "copied") setToast(t.copied);
-              }}
-            >
-              {t.share}
-            </button>
-            {toast && <p role="status">{toast}</p>}
+            <ShareButton title={festival.nameKo} />
           </div>
         )}
       </section>
     </div>
+  );
+}
+
+function Tab({
+  current,
+  id,
+  onClick,
+  children,
+}: {
+  current: string;
+  id: string;
+  onClick: (id: string) => void;
+  children: string;
+}) {
+  const on = current === id;
+  return (
+    <button
+      type="button"
+      aria-current={on ? "page" : undefined}
+      onClick={() => onClick(id)}
+    >
+      {children}
+    </button>
   );
 }
 

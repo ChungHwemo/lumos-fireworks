@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals, festivals } from "../../data/catalog.ts";
+import { parseFromQuery } from "../../domain/query.ts";
 import { weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
 
@@ -15,6 +16,8 @@ function rainKey(policy: string) {
 
 export function CatalogPage() {
   const { lang, t } = useLang();
+  const [params, setParams] = useSearchParams();
+  const from = parseFromQuery(params.get("from"));
   const [holdOnly, setHoldOnly] = useState(false);
   const [paidOnly, setPaidOnly] = useState(false);
   const [pref, setPref] = useState("");
@@ -25,6 +28,7 @@ export function CatalogPage() {
   );
 
   const rows = catalogFestivals({
+    from,
     rainPolicy: holdOnly ? "hold" : undefined,
     paidSeats: paidOnly ? true : undefined,
   }).filter((festival) => !pref || festival.prefecture === pref);
@@ -32,12 +36,24 @@ export function CatalogPage() {
   return (
     <main className="page page-list">
       <header className="hero">
-        <p className="kicker">Asia/Tokyo · from 2026-09-04</p>
+        <p className="kicker">Asia/Tokyo · from {from}</p>
         <h1>{t.appTitle}</h1>
         <p className="lede">{t.appBlurb}</p>
       </header>
       <p className="disclaimer">{t.unofficial}</p>
       <div className="filters" role="group" aria-label={t.catalog}>
+        <label>
+          {t.fromDate}
+          <input
+            type="date"
+            value={from}
+            onChange={(event) => {
+              const next = parseFromQuery(event.target.value || null);
+              params.set("from", next);
+              setParams(params, { replace: true });
+            }}
+          />
+        </label>
         <label>
           <input
             type="checkbox"
@@ -73,7 +89,9 @@ export function CatalogPage() {
           <li key={festival.id}>
             <Link className="card" to={`/e/${festival.id}`}>
               <time dateTime={festival.date}>
-                {festival.date} ({weekday(festival.date, lang)})
+                {festival.date}
+                {festival.dateEnd ? `–${festival.dateEnd}` : ""} (
+                {weekday(festival.date, lang)})
               </time>
               <strong>
                 {festival.nameKo}{" "}

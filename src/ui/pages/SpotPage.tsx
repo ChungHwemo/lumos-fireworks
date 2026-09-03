@@ -6,9 +6,13 @@ import {
   festivalById,
   linksFor,
 } from "../../data/catalog.ts";
+import { loadReports } from "../../data/reports.ts";
+import { crowdHeat, listReports } from "../../domain/report.ts";
 import { useLang } from "../Lang.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
-import { appleDir, googleDir, shareUrl } from "../share.ts";
+import { appleDir, googleDir } from "../share.ts";
+import { ShareButton } from "../ShareButton.tsx";
+import { ReportForm, reportKindLabel } from "./ReportForm.tsx";
 
 export function SpotPage() {
   const { festivalId = "", spotId = "" } = useParams();
@@ -18,13 +22,22 @@ export function SpotPage() {
   const spots = useMemo(() => decoratedSpots(festivalId), [festivalId]);
   const controls = useMemo(() => controlsFor(festivalId), [festivalId]);
   const spot = spots.find((row) => row.id === spotId);
-  const [toast, setToast] = useState("");
+  const [reports, setReports] = useState(loadReports);
+  const festivalReports = useMemo(
+    () => listReports(reports, { festivalId }),
+    [reports, festivalId],
+  );
+  const heat = useMemo(
+    () => crowdHeat(spots, festivalReports),
+    [spots, festivalReports],
+  );
 
   if (!festival) return <Navigate to="/" replace />;
   if (!spot) return <Navigate to={`/e/${festivalId}`} replace />;
 
   const hitting = controls.filter((control) => spot.access.controlIds.includes(control.id));
   const links = linksFor(spot.id);
+  const mine = festivalReports.filter((report) => report.spotId === spot.id);
 
   return (
     <div className="split">
@@ -33,8 +46,10 @@ export function SpotPage() {
         spots={spots}
         controls={controls}
         selectedId={spot.id}
+        heat={heat}
         showControls
         showSpots
+        showCrowd
         layer="pale"
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
       />
@@ -46,6 +61,7 @@ export function SpotPage() {
           {spot.nameKo} <span lang="ja">{spot.nameJa}</span>
         </h1>
         <p className="disclaimer">{festival.disclaimerKo}</p>
+        <ShareButton title={spot.nameKo} />
         <p className="meta">
           {spot.distanceMeters != null && (
             <>
@@ -73,7 +89,11 @@ export function SpotPage() {
           </div>
           <div>
             <dt>{t.crowd}</dt>
-            <dd>{spot.crowdKo}</dd>
+            <dd>
+              {spot.crowdKo}
+              <br />
+              <span className="meta">{t.notLiveCrowd}</span>
+            </dd>
           </div>
           <div>
             <dt>{t.restroom}</dt>
@@ -112,23 +132,36 @@ export function SpotPage() {
           </p>
         ))}
         <div className="actions">
+          <Link className="primary" to={`/e/${festival.id}/p/${spot.id}/3d`}>
+            {t.look3d}
+          </Link>
           <a className="primary" href={googleDir(spot.lat, spot.lng)} rel="noreferrer" target="_blank">
             {t.googleMaps}
           </a>
           <a href={appleDir(spot.lat, spot.lng)} rel="noreferrer" target="_blank">
             {t.appleMaps}
           </a>
-          <button
-            type="button"
-            onClick={async () => {
-              const result = await shareUrl(spot.nameKo, t.shareCopy, window.location.href);
-              if (result === "copied") setToast(t.copied);
-            }}
-          >
-            {t.share}
-          </button>
         </div>
-        {toast && <p role="status">{toast}</p>}
+        <h2>{t.tabReports}</h2>
+        <ReportForm
+          festivalId={festival.id}
+          spotId={spot.id}
+          lng={spot.lng}
+          lat={spot.lat}
+          onSaved={setReports}
+        />
+        {mine.length === 0 ? (
+          <p>{t.reportEmpty}</p>
+        ) : (
+          <ol className="report-list">
+            {mine.map((report) => (
+              <li key={report.id}>
+                <strong>{reportKindLabel(report.kind, t)}</strong>
+                <p>{report.body}</p>
+              </li>
+            ))}
+          </ol>
+        )}
       </article>
     </div>
   );

@@ -5,14 +5,23 @@ import type { Coord, ControlRecord } from "../../domain/types.ts";
 import { circlePolygon } from "./circle.ts";
 import { gsiStyle, type GsiLayer } from "./gsi-style.ts";
 
+export type HeatPoint = {
+  id: string;
+  lng: number;
+  lat: number;
+  level: number;
+};
+
 type Props = {
   launch: Coord | null;
   spots: DecoratedSpot[];
   controls: ControlRecord[];
   selectedId?: string | null;
   sharePin?: Coord | null;
+  heat?: HeatPoint[];
   showControls: boolean;
   showSpots: boolean;
+  showCrowd?: boolean;
   layer: GsiLayer;
   onSelect: (spotId: string) => void;
   onMapClick?: (coord: Coord) => void;
@@ -24,8 +33,10 @@ export function FestivalMap({
   controls,
   selectedId,
   sharePin,
+  heat = [],
   showControls,
   showSpots,
+  showCrowd = false,
   layer,
   onSelect,
   onMapClick,
@@ -39,8 +50,10 @@ export function FestivalMap({
     controls,
     selectedId,
     sharePin,
+    heat,
     showControls,
     showSpots,
+    showCrowd,
     layer,
     onSelect,
     onMapClick,
@@ -51,8 +64,10 @@ export function FestivalMap({
     controls,
     selectedId,
     sharePin,
+    heat,
     showControls,
     showSpots,
+    showCrowd,
     layer,
     onSelect,
     onMapClick,
@@ -118,9 +133,17 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, spots, controls, selectedId, sharePin, showControls, showSpots]);
+  }, [launch, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd]);
 
   return <div ref={root} className="map" role="application" aria-label="행사 지도" />;
+}
+
+function dropLayer(map: maplibregl.Map, id: string) {
+  if (map.getLayer(id)) map.removeLayer(id);
+}
+
+function dropSource(map: maplibregl.Map, id: string) {
+  if (map.getSource(id)) map.removeSource(id);
 }
 
 function drawOverlays(
@@ -131,9 +154,11 @@ function drawOverlays(
   for (const marker of markers.current) marker.remove();
   markers.current = [];
 
-  if (map.getLayer("control-fill")) map.removeLayer("control-fill");
-  if (map.getLayer("control-line")) map.removeLayer("control-line");
-  if (map.getSource("controls")) map.removeSource("controls");
+  dropLayer(map, "control-fill");
+  dropLayer(map, "control-line");
+  dropSource(map, "controls");
+  dropLayer(map, "crowd-heat");
+  dropSource(map, "crowd");
 
   if (props.showControls) {
     const features = props.controls
@@ -162,6 +187,49 @@ function drawOverlays(
       type: "line",
       source: "controls",
       paint: { "line-color": "#c2410c", "line-width": 2 },
+    });
+  }
+
+  if (props.showCrowd && props.heat && props.heat.length > 0) {
+    map.addSource("crowd", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: props.heat.map((point) => ({
+          type: "Feature",
+          properties: { level: point.level, id: point.id },
+          geometry: { type: "Point", coordinates: [point.lng, point.lat] },
+        })),
+      },
+    });
+    map.addLayer({
+      id: "crowd-heat",
+      type: "circle",
+      source: "crowd",
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["get", "level"],
+          1,
+          10,
+          5,
+          32,
+        ],
+        "circle-color": [
+          "interpolate",
+          ["linear"],
+          ["get", "level"],
+          1,
+          "#86efac",
+          3,
+          "#fbbf24",
+          5,
+          "#ef4444",
+        ],
+        "circle-opacity": 0.32,
+        "circle-blur": 0.4,
+      },
     });
   }
 
