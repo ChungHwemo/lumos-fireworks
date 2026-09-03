@@ -90,14 +90,27 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 
 ### F1. 기울어지는 지도
 
-- `maxPitch: 0` → `72`. 진입 pitch 55°.
-- 발사 앵커가 있으면 bearing은 그 방위각. 없으면 0°.
-- 지형은 D2의 AWS Terrain Tiles(`encoding: "terrarium"`). `exaggeration: 1.2`.
+프로토타입에서 맞춰 본 값이다. 그대로 쓴다.
+
+- `maxPitch: 0` → `85`. 진입 pitch 83°, zoom 15.0. 하늘이 화면 위 절반을 차지해야 불꽃이 산다.
+- 지도 생성 시 `canvasContextAttributes: { antialias: true }`.
+- 지형은 D2의 AWS Terrain Tiles(`encoding: "terrarium"`), `exaggeration: 1.3`.
+- 밤은 타일을 새로 받지 않고 래스터 paint로 만든다. 地理院タイル 원본 그대로다.
+  `raster-brightness-max: 0.15`, `raster-brightness-min: 0`, `raster-saturation: -0.75`,
+  `raster-contrast: 0.35`. 배경 `#060814`.
+- `sky`는 레이어가 아니라 **스타일 루트 속성**이다. `type: "sky"` 레이어는 MapLibre 5가 거부한다.
+  `sky-color #0a0f24`, `horizon-color #3a2140`, `fog-color #140b1c`, `sky-horizon-blend 0.8`.
+- 카메라는 발사점을 중심으로 도는 오비트. 90°에 40초, `easing: (t) => t`.
 - 출처 줄은 두 줄이 된다. 배경 「地理院タイル」 + 목록 페이지 링크는 그대로 두고, 표고 출처를 한 줄 더 붙인다. DEM은 다른 기관 것이다.
 
 ### F2. 발사 지점 불꽃
 
-- 셸이 올라가고, 폭발하고, 떨어진다. 동시 최대 3셸, 셸당 200–300 입자.
+- 셸이 올라가고, 폭발하고, 떨어진다. 동시 최대 6셸, 셸당 340 입자.
+- **셸은 지상 100m(`BASE_Y`)에서 뜬다.** 폭발 정점은 지상 720–1100m다. 熱海 능선이 400–500m라
+  버스트가 산에 걸리지 않는다. 대신 지상에서 올라오는 발사 불빛은 없다. 의도한 맞바꿈이다.
+- `THREE.Points` + `AdditiveBlending`, `depthWrite: false`, **`sizeAttenuation: false`**.
+  MapLibre가 넘겨주는 투영 행렬 아래서 `sizeAttenuation: true`는 크기를 못 믿는다. 픽셀 크기로 고정한다.
+- 스프라이트는 캔버스 radial gradient로 런타임 생성한다. 파일 없음.
 - 발사 앵커가 있으면 그 좌표에서 터진다.
 - 발사 앵커가 없으면 **지도 중앙 기준 반경 400m 안 무작위 지점**에서 터진다. 중앙은 `festivalArea`가 이미 내주는 `area.coord`(지구 또는 시 대략 좌표)다. 무작위 시드는 `festival.id`다 — 열 때마다 자리가 바뀌면 좌표를 읽는 것처럼 보이고, 고정하면 없는 앵커를 있는 것처럼 보인다. 행사마다 다르고 그 행사 안에서는 같은 자리가 절충이다. 핀은 「발사 지점 미확정」이고 범례도 그렇게 적는다. 거리는 여전히 표시하지 않는다 (원 PRD 제품 원칙 3).
 - 토글로 끈다. 기본 켬.
@@ -123,6 +136,13 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 ## 5. 조사로 정리된 것
 
 **U1(GSI DEM 무효 화소)은 착수 전에 실측으로 닫았다.** 결론은 D2에 있다. 지형은 산다.
+
+### 프로토타입이 잡아낸 함정
+
+`load`가 아니라 **`style.load`에 붙인다.** 백그라운드 탭은 `document.hidden`이라
+`requestAnimationFrame`이 멈추고, MapLibre는 첫 렌더를 못 해 `load`를 영원히 안 쏜다.
+스타일도 CDN도 terrain도 무죄였다. 지금 `FestivalMap.tsx`가 `map.on("load")`에서
+오버레이를 그리므로 같은 위험을 안고 있다. 이번에 같이 옮긴다.
 
 ### 불꽃 라이브러리는 쓰지 않는다
 
@@ -166,7 +186,7 @@ WebGL 렌더·MapLibre 카메라·Three.js 씬은 목하지 않고 테스트하�
 
 | # | 시임 | 공개 함수 | 왜 |
 | --- | --- | --- | --- |
-| B1 | 셸 궤적 | `shellAt(shell, tSeconds)` | 올라가서 터지고 떨어져야 한다. 폭발 전에 입자가 있으면 안 된다 |
+| B1 | 셸 궤적 | `shellAt(shell, tSeconds)` | 지상 100m에서 떠서 정점까지 올라간다. 폭발 뒤에는 null |
 | B2 | 폭발 입자 | `burstParticles(shell, tSeconds)` | 폭발 순간 반경 0, 시간이 갈수록 커지고 중력에 처진다 |
 | B3 | 미확정 위치 | `unknownLaunchOffset(center, seed)` | 같은 시드면 같은 좌표. 중심에서 400m 안 |
 
