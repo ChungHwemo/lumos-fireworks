@@ -1,0 +1,53 @@
+{
+  "$comment": "거리×통제 시드. 반경은 추정. 공식 폴리곤이 오면 교체한다.",
+  "controls": [
+    {
+      "id": "atami-launch-perimeter",
+      "festivalId": "atami-kaijo-2026-09-13",
+      "kind": "launch_perimeter",
+      "titleKo": "열해 발사 지점 출입금지",
+      "scheduleKo": "개최일 정오부터 종료까지",
+      "detailKo": "열해만 발사 선착장·선박 일대는 정오부터 출입금지. 친수공원·선비치는 관람 구역이다. 반경 80m는 선착장 추정.",
+      "officialUrl": "https://www.ataminews.gr.jp/event/8/",
+      "center": null,
+      "radiusMeters": 80,
+      "spotIds": "*"
+    },
+    {
+      "id": "atami-hotel-gate",
+      "festivalId": "atami-kaijo-2026-09-13",
+      "kind": "paid_gate",
+      "titleKo": "친수공원 숙박자·유료 구역",
+      "scheduleKo": "개최 저녁",
+      "detailKo": "제2·3공구는 예년 숙박자 전용 또는 유료석. 표·숙소증 없이 들어가지 못한다.",
+      "officialUrl": "https://www.ataminews.gr.jp/event/8/",
+      "center": null,
+      "radiusMeters": null,
+      "spotIds": ["atami-shinsui-2"]
+    },
+    {
+      "id": "sakata-vehicle",
+      "festivalId": "sakata-hanabi-2026",
+      "kind": "vehicle",
+      "titleKo": "사카타 차량 진입 규제",
+      "scheduleKo": "2026-09-12 당일",
+      "detailKo": "제초·와카하라·와카타케·료바 정(町) 차량 진입 규제. 걸어가면 관람 가능하다.",
+      "officialUrl": "https://sakata-hanabi.com/summary/",
+      "center": { "lng": 139.843, "lat": 38.914 },
+      "radiusMeters": 2000,
+      "spotIds": "*"
+    },
+    {
+      "id": "sakata-paid-gate",
+      "festivalId": "sakata-hanabi-2026",
+      "kind": "paid_gate",
+      "titleKo": "사카타 유료 관람 구역",
+      "scheduleKo": "16:00 개장",
+      "detailKo": "유료 관람 구역은 표 없이 입장할 수 없다. 스완파크는 무료.",
+      "officialUrl": "https://sakata-hanabi.com/summary/",
+      "center": null,
+      "radiusMeters": null,
+      "spotIds": ["sakata-paid"]
+    }
+  ]
+}

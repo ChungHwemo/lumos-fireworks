@@ -1,0 +1,84 @@
+:root {
+  color-scheme: dark;
+  --bg: #140c08;
+  --sheet: #1c120c;
+  --ink: #f6ebe0;
+  --mute: #c4b0a0;
+  --line: #3a2a20;
+  --ember: #ff6a3d;
+  --ok: #d8f59a;
+  --warn: #ffd36a;
+  --bad: #ff8a8a;
+  --serif: "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --sans: "Hiragino Sans", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+a { color: var(--ember); }
+h1, h2 { font-family: var(--serif); font-weight: 600; }
+h1 { font-size: 1.45rem; line-height: 1.25; margin: 0.2rem 0 0.6rem; }
+h1 span, strong span { font-weight: 500; color: var(--mute); }
+.kicker { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; color: var(--mute); margin: 0 0 0.35rem; }
+.lede { color: var(--mute); margin-top: 0; }
+.disclaimer, .note { font-size: 0.85rem; color: var(--mute); border-left: 3px solid var(--ember); padding-left: 0.7rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.page-list { max-width: 40rem; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
+.hero { padding: 1rem 0 0.5rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; margin: 1rem 0; align-items: center; }
+.filters label { display: flex; gap: 0.35rem; align-items: center; font-size: 0.9rem; }
+select, button, .primary { font: inherit; }
+select, button { background: #2a1b14; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 0.35rem 0.75rem; }
+button[aria-current="true"], button[aria-pressed="true"], .primary {
+  background: var(--ember); color: #1a0b06; border-color: var(--ember);
+}
+.cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.card { display: block; text-decoration: none; color: inherit; background: var(--sheet); border: 1px solid var(--line); border-radius: 1rem; padding: 0.9rem 1rem; }
+.card time { color: var(--ember); font-size: 0.85rem; }
+.card strong { display: block; margin: 0.25rem 0; }
+.meta { color: var(--mute); font-size: 0.85rem; }
+
+.split { min-height: 100dvh; display: flex; flex-direction: column; }
+.map { height: 42dvh; min-height: 220px; }
+.sheet { flex: 1; background: var(--sheet); border-top: 1px solid var(--line); border-radius: 1.1rem 1.1rem 0 0; margin-top: -0.8rem; position: relative; padding: 1rem 1rem 3rem; overflow: auto; }
+.back { display: inline-block; margin-bottom: 0.4rem; text-decoration: none; }
+.tabs { display: flex; gap: 0.4rem; margin: 0.8rem 0 1rem; }
+.stack { display: grid; gap: 0.85rem; }
+.dates { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
+.spot-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
+.spot-list a { display: flex; justify-content: space-between; gap: 0.75rem; text-decoration: none; color: inherit; background: #26180f; border-radius: 0.8rem; padding: 0.7rem 0.8rem; }
+.cells { display: grid; gap: 0.7rem; }
+.cells div { background: #26180f; border-radius: 0.8rem; padding: 0.7rem 0.8rem; }
+dt { font-size: 0.75rem; color: var(--ember); margin-bottom: 0.25rem; }
+dd { margin: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.toggles { display: flex; gap: 1rem; }
+
+.pin {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid #1a0b06;
+  color: #1a0b06;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
+}
+.pin-launch { background: var(--ember); }
+.pin-open { background: var(--ok); }
+.pin-paid { background: var(--warn); }
+.pin-vehicle { background: #9ad7ff; }
+.pin-blocked { background: var(--bad); }
+.pin.is-on { outline: 3px solid #fff; width: 32px; height: 32px; }
+
+.maplibregl-ctrl-attrib { font-size: 10px; }
+
+@media (min-width: 880px) {
+  .split { flex-direction: row; }
+  .map { height: 100dvh; flex: 1.2; min-height: 100dvh; }
+  .sheet { margin: 0; border-radius: 0; width: min(28rem, 40vw); height: 100dvh; }
+}

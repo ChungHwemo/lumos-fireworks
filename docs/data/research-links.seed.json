@@ -1,0 +1,20 @@
+{
+  "researchLinks": [
+    {
+      "id": "atami-official-viewing",
+      "url": "https://www.ataminews.gr.jp/event/8/",
+      "kind": "official",
+      "fallbackTitle": "열해 해상 불꽃 공식 안내",
+      "note": "관람 추천은 주최 쪽 문장이다. 혼잡·폐쇄는 당일 현장 통제가 이긴다.",
+      "spotIds": ["atami-sunbeach", "atami-shinsui-1", "atami-shinsui-2", "atami-port", "atami-sanremo"]
+    },
+    {
+      "id": "sakata-official-summary",
+      "url": "https://sakata-hanabi.com/summary/",
+      "kind": "official",
+      "fallbackTitle": "사카타 불꽃 개최 개요",
+      "note": "무료는 스완파크, 유료는 표. 좌석 도면은 공식 페이지가 최신이다.",
+      "spotIds": ["sakata-swan", "sakata-paid", "sakata-dewa"]
+    }
+  ]
+}

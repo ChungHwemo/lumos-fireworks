@@ -1,0 +1,18 @@
+{
+  "paidSeats": [
+    {
+      "festivalId": "sakata-hanabi-2026",
+      "zoneKo": "유료 관람 구역 (좌석 종류 복수)",
+      "priceJpy": 3000,
+      "noteKo": "C자유석·제방석 등이 3,000엔대부터. 종류·재고는 공식·로손 티켓을 본다.",
+      "ticketUrl": "https://sakata-hanabi.com/summary/"
+    },
+    {
+      "festivalId": "atami-kaijo-2026-09-13",
+      "zoneKo": "숙박자 전용 관람석 (제2·3공구)",
+      "priceJpy": null,
+      "noteKo": "온천 조합 가입 숙소 투숙객 전용인 해가 있다. 일반 매표가 아닐 수 있다.",
+      "ticketUrl": "https://www.ataminews.gr.jp/event/8/"
+    }
+  ]
+}
