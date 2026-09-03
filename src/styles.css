@@ -276,6 +276,13 @@ dd { margin: 0; }
 }
 .pin-launch { background: rgba(255, 106, 61, 0.82); }
 .pin-approx { background: rgba(244, 241, 234, 0.78); }
+/* 熱海처럼 몰려 있으면 겹침을 피할 수 없다. 겹치더라도 단어가 위에 남게 한다. */
+.pin-launch,
+.pin-approx,
+.pin-station,
+.pin-share {
+  z-index: 2;
+}
 .pin-share { background: rgba(244, 241, 234, 0.82); }
 .pin-station { background: rgba(154, 215, 255, 0.86); }
 .pin-open { background: rgba(216, 245, 154, 0.82); }
