@@ -26,14 +26,34 @@ Three.js는 MapLibre custom layer 안에서 **불꽃만** 그린다. 카메라·
 
 기각한 것: Three.js 전면 교체. 타일 로더·카메라 컨트롤·피킹·폴리곤을 전부 다시 써야 하고 원 PRD F4 개정이 필요하다.
 
-### D2. 지형은 국토지리원 DEM을 브라우저가 직접 읽는다
+### D2. 지형 DEM은 AWS Terrain Tiles. 국토지리원 DEM은 쓸 수 없다
 
-`https://cyberjapandata.gsi.go.jp/xyz/dem_png/{z}/{x}/{y}.png`.
+`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`.
+MapLibre `raster-dem` + `encoding: "terrarium"` 네이티브 지원. 키 불필요.
 2026-09-03 확인: `200` / `image/png` / `access-control-allow-origin: *`.
-래스터 타일과 같은 취급이다. 저장·재배포·프록시하지 않는다.
+저장·재배포·프록시하지 않는다. 배경 래스터는 그대로 地理院タイル이다.
 
-높이 인코딩은 `h = 0.01 × (65536R + 256G + B)`. MapLibre custom encoding으로
-`redFactor: 655.36, greenFactor: 2.56, blueFactor: 0.01, baseShift: 0`.
+**국토지리원 DEM을 기각한 이유는 실측이다.** z13 타일에서 무효 화소를 셌다.
+
+| 소스 | 熱海 | 酒田 | 諏訪 | 판정 |
+| --- | --- | --- | --- | --- |
+| GSI `dem_png` | 198 | 0 | 0 | 바다가 전부 무효 |
+| GSI `dem5a_png` | 199 | 0 | 595 | 육지에도 구멍 |
+| AWS terrarium | 0 | 0 | 0 | 깨끗. 바다는 실제 수심 |
+
+국토지리원 DEM의 무효 화소는 `RGB(128,0,0)`이다. GSI 인코딩
+(`h = 0.01 × (65536R + 256G + B)`)을 MapLibre custom encoding
+(`redFactor 655.36, greenFactor 2.56, blueFactor 0.01`)으로 옮기면 그 화소가
+`128 × 655.36 = 83,886m`가 된다. 熱海湾 전체가 84km 벽으로 선다.
+MapLibre custom encoding은 고정 선형식이라 무효 화소를 거를 수 없고,
+전처리하려면 타일을 프록시해야 하는데 그건 금지다.
+
+`r = 128`은 무효 화소 전용이다. 그 값이 뜻하는 높이 범위는 `-83,886m ~ -83,230m`라
+실제 지형에 존재하지 않는다. 그래도 MapLibre 쪽에서 분기할 방법이 없다.
+
+출처 표기는 두 줄이 된다. 배경은 「地理院タイル」, 표고는 SRTM/USGS
+(응답 헤더 `x-amz-meta-x-imagery-sources: srtm/N35E138.tif`로 확인).
+문구는 tilezen/joerd `docs/attribution.md`가 요구하는 것을 쓴다.
 
 ### D3. 불꽃은 상시 재생, 끄기 토글
 
@@ -72,8 +92,8 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 
 - `maxPitch: 0` → `72`. 진입 pitch 55°.
 - 발사 앵커가 있으면 bearing은 그 방위각. 없으면 0°.
-- 지형은 D2의 GSI DEM. `exaggeration: 1.2`.
-- 출처 줄에 「地理院タイル」과 목록 페이지 링크를 그대로 둔다. DEM도 같은 출처다.
+- 지형은 D2의 AWS Terrain Tiles(`encoding: "terrarium"`). `exaggeration: 1.2`.
+- 출처 줄은 두 줄이 된다. 배경 「地理院タイル」 + 목록 페이지 링크는 그대로 두고, 표고 출처를 한 줄 더 붙인다. DEM은 다른 기관 것이다.
 
 ### F2. 발사 지점 불꽃
 
@@ -100,17 +120,48 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 - `/3d` 시선 스케치 화면 변경. 이번 범위 밖이다.
 - 발사 시각 판정.
 
-## 5. 미지수
+## 5. 조사로 정리된 것
 
-**U1. GSI DEM 무효 화소.** `dem_png`의 무효 화소는 `RGB(128,0,0)`이고 D2 인코딩으로 풀면 83,886m가 된다.
-熱海·酒田 둘 다 해안이라 바다에서 스파이크가 날 수 있다.
+**U1(GSI DEM 무효 화소)은 착수 전에 실측으로 닫았다.** 결론은 D2에 있다. 지형은 산다.
 
-구현 첫 단계에서 실측한다. 스파이크가 나면 **지형을 끄고 pitch만** 쓴다. F1의 나머지는 그대로 산다.
-이 문서는 지형이 된다고 단정하지 않는다.
+### 불꽃 라이브러리는 쓰지 않는다
+
+| 후보 | 라이선스 | 기각 사유 |
+| --- | --- | --- |
+| `three.quarks` | MIT | peer `three >= 0.182.0`인데 우리는 `^0.180.0`. unpacked 1.2MB |
+| `fireworks-js` | MIT | 2D Canvas. WebGL custom layer 안에 못 들어간다 |
+| `paullewis/Fireworks` | Apache-2.0 | 2D canvas. 2020년 이후 방치 |
+| `wass08/wawa-vfx` | MIT | React Three Fiber 전용. 이 앱은 R3F를 쓰지 않는다 |
+
+Three.js용으로 쓸 만한 불꽃 라이브러리가 없다. `THREE.Points` 하나로 직접 쓴다.
+
+### 스프라이트는 파일로 넣지 않는다
+
+three.js 리포에 MIT 스프라이트가 있다 (`spark1.png` 1,608B, `disc.png` 866B).
+쓰지 않는다. 캔버스 radial gradient로 런타임에 만든다. 에셋 파일 0개, 라이선스 주석 0줄, 요청 0회다.
+
+### 통합은 MapLibre 공식 예제를 따른다
+
+`maplibre-gl-js` 리포의 `test/examples/adding-3d-models-using-threejs-on-terrain.html`이
+지형 위 three.js라 우리 케이스와 같다. 설치된 `maplibre-gl@5.24.0`에 아래가 전부 있는 것을 확인했다.
+
+```js
+new THREE.WebGLRenderer({ canvas: map.getCanvas(), context: gl, antialias: true })
+renderer.autoClear = false
+scene.rotateX(Math.PI / 2)
+scene.scale.multiply(new THREE.Vector3(1, 1, -1))   // x=동, y=위, z=북
+// render(gl, args)
+new THREE.Matrix4().fromArray(args.defaultProjectionData.mainMatrix)
+MercatorCoordinate.fromLngLat(origin, elevation).meterInMercatorCoordinateUnits()
+map.queryTerrainElevation(lngLat)
+map.triggerRepaint()
+```
+
+지도 생성 시 `canvasContextAttributes: { antialias: true }`가 필요하다.
 
 ## 6. TDD 시임
 
-새로 테스트하는 것은 아래 넷뿐이다. 여기 없는 것에는 테스트를 쓰지 않는다.
+새로 테스트하는 것은 아래 셋뿐이다. 여기 없는 것에는 테스트를 쓰지 않는다.
 WebGL 렌더·MapLibre 카메라·Three.js 씬은 목하지 않고 테스트하지도 않는다. 실제 Chrome에서 눈으로 본다.
 
 | # | 시임 | 공개 함수 | 왜 |
@@ -118,9 +169,9 @@ WebGL 렌더·MapLibre 카메라·Three.js 씬은 목하지 않고 테스트하�
 | B1 | 셸 궤적 | `shellAt(shell, tSeconds)` | 올라가서 터지고 떨어져야 한다. 폭발 전에 입자가 있으면 안 된다 |
 | B2 | 폭발 입자 | `burstParticles(shell, tSeconds)` | 폭발 순간 반경 0, 시간이 갈수록 커지고 중력에 처진다 |
 | B3 | 미확정 위치 | `unknownLaunchOffset(center, seed)` | 같은 시드면 같은 좌표. 중심에서 400m 안 |
-| B4 | 지형 높이 해석 | `gsiDemHeight(r, g, b)` | 무효 화소 `(128,0,0)`을 높이로 읽으면 안 된다. U1의 판정 근거 |
 
-`shellAt`, `burstParticles`, `unknownLaunchOffset`, `gsiDemHeight` 는 전부 순수 함수다.
+`shellAt`, `burstParticles`, `unknownLaunchOffset` 은 전부 순수 함수다.
+표고 디코딩에는 테스트를 쓰지 않는다. `terrarium`은 MapLibre가 푼다 — 우리 코드가 아니다.
 `Math.random`도 `Date.now`도 부르지 않는다. 시간과 시드는 인자로 받는다.
 
 기대값은 리터럴이다. 같은 공식을 다시 돌려 expected를 만들지 않는다.
@@ -129,21 +180,19 @@ WebGL 렌더·MapLibre 카메라·Three.js 씬은 목하지 않고 테스트하�
 
 ```
 src/domain/burst.ts             shellAt, burstParticles, unknownLaunchOffset
-src/domain/dem.ts               gsiDemHeight
 src/ui/map/fireworks-layer.ts   MapLibre custom layer + Three.js
 src/ui/map/icons.tsx            SVG 픽토그램
 src/ui/map/MapLegend.tsx        범례
 src/ui/map/gsi-style.ts         terrain 소스
 src/ui/map/FestivalMap.tsx      pitch·terrain·레이어 배선, 핀 교체
 tests/domain/burst.test.ts      B1 B2 B3
-tests/domain/dem.test.ts        B4
 ```
 
 `FestivalMap.tsx`는 지금 366줄이다. 핀 생성과 범례를 빼내면 줄어든다.
 
 ## 7. 성공 기준
 
-- 熱海 행사 지도가 기울어지고, 지형이 보이거나(U1 통과) pitch만 보인다(U1 실패). 둘 중 어느 쪽인지 문서에 적혀 있다.
+- 熱海 행사 지도가 기울어지고 熱海湾을 둘러싼 산의 기복이 보인다. 바다에 벽이 서지 않는다.
 - 발사 앵커가 있는 행사에서 그 좌표 위로 불꽃이 터진다. 지도를 돌리면 불꽃도 같이 돈다.
 - 발사 앵커가 없는 행사에서 「발사 지점 미확정」 핀이 뜨고, 거리는 어디에도 없다.
 - 세 언어 어디에도 한 글자 핀 라벨이 없다.
@@ -153,7 +202,8 @@ tests/domain/dem.test.ts        B4
 
 ## 8. 리스크
 
-- U1이 실패하면 「3D 지도」가 「기울어지는 평면 지도」가 된다. 그래도 불꽃과 핀 개선은 산다.
+- 표고를 미국 SRTM(30m)에 의존한다. 국토지리원 5m DEM보다 거칠다. 눈으로 보는 기복에는 충분하지만 정밀 표고가 아니다. 거리·가시성 판정에는 쓰지 않는다.
+- AWS Terrain Tiles는 무료 공개 데이터셋이고 SLA가 없다. 죽으면 지형만 빠지고 나머지는 산다.
 - 상시 `requestAnimationFrame`은 배터리를 쓴다. F2의 정지 조건 셋이 완화책의 전부다.
 - 저사양 단말에서 프레임이 떨어진다. 입자 수를 화면 폭과 `devicePixelRatio`로 줄인다.
 - 발사 앵커는 여전히 추정이다. 불꽃이 그 위에서 터진다고 정확도가 올라가지 않는다. 면책 문구는 그대로 둔다.
