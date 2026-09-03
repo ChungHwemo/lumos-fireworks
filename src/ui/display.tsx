@@ -1,3 +1,4 @@
+import { festivalStationPoint } from "../domain/station.ts";
 import type { FestivalRecord, SpotRecord } from "../domain/types.ts";
 import { festivalCopy, spotCopy } from "./content.ts";
 import type { Lang } from "./i18n.ts";
@@ -56,11 +57,21 @@ export function festivalVenue(festival: FestivalRecord, lang: Lang) {
   };
 }
 
-export function festivalStation(festival: FestivalRecord, lang: Lang): string {
+export function festivalStationPair(festival: FestivalRecord) {
   const copy = festivalCopy(festival.seriesId);
-  if (lang === "ja") return copy.stationJa || festival.nearestStationKo;
-  if (lang === "en") return copy.stationEn || festival.nearestStationKo;
-  return festival.nearestStationKo;
+  const point = festivalStationPoint(festival);
+  return {
+    ko: point?.label.ko ?? festival.nearestStationKo,
+    ja: point?.label.ja || copy.stationJa || festival.nearestStationKo,
+    en: point?.label.en || copy.stationEn || festival.nearestStationKo,
+  };
+}
+
+export function festivalStation(festival: FestivalRecord, lang: Lang): string {
+  const names = festivalStationPair(festival);
+  if (lang === "ja") return names.ja;
+  if (lang === "en") return names.en;
+  return names.ko;
 }
 
 export function festivalRainNote(festival: FestivalRecord, lang: Lang): string {

@@ -8,14 +8,16 @@ import {
   seriesDates,
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
+import { areaLabel, festivalArea } from "../../domain/area.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
+import { festivalStationPoint } from "../../domain/station.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { filterSpotsByText } from "../../domain/spot.ts";
 import { SEAT_COPY, spotNameEn } from "../content.ts";
 import {
   NamePair,
   festivalRainNote,
-  festivalStation,
+  festivalStationPair,
   festivalTitle,
   festivalVenue,
 } from "../display.tsx";
@@ -64,12 +66,18 @@ export function FestivalPage() {
     setParams(params, { replace: true });
   };
 
-  const pin = festival.launch ?? spots[0] ?? { lng: 139.7, lat: 36.2 };
+  const area = festivalArea(festival);
+  const station = festivalStationPoint(festival);
+  const stationNames = festivalStationPair(festival);
+  const pin = festival.launch ?? spots[0] ?? area.coord;
 
   return (
     <div className="split">
       <FestivalMap
+        key={festival.id}
         launch={festival.launch}
+        area={area}
+        station={station?.coord}
         spots={visibleSpots}
         controls={controls}
         sharePin={sharePin}
@@ -85,6 +93,10 @@ export function FestivalPage() {
           mapAria: t.mapAria,
           launchAria: t.launch,
           shareAria: t.share,
+          approx: t.pinApprox,
+          approxAria: areaLabel(area, lang),
+          station: t.pinStation,
+          stationAria: stationNames[lang],
           spotName: (spot) =>
             lang === "ja" ? spot.nameJa : lang === "en" ? spotNameEn(spot.id, spot.nameJa) : spot.nameKo,
         }}
@@ -109,7 +121,7 @@ export function FestivalPage() {
         </h1>
         <p className="disclaimer">
           {t.unofficial}
-          {festival.launch ? ` ${t.launchEstimate}` : ""}
+          {festival.launch ? ` ${t.launchEstimate}` : ` ${t.areaApprox}`}
         </p>
         <nav className="tabs" aria-label="sections">
           <Tab current={tab} id="event" onClick={setTab}>
@@ -137,9 +149,18 @@ export function FestivalPage() {
                 en={festivalVenue(festival, lang).en}
                 lang={lang}
               />
+              {area.precision === "city" || area.precision === "prefecture"
+                ? ` · ${areaLabel(area, lang)}`
+                : ""}
             </p>
             <p>
-              <strong>{t.station}</strong> {festivalStation(festival, lang)}
+              <strong>{t.station}</strong>{" "}
+              <NamePair
+                ko={stationNames.ko}
+                ja={stationNames.ja}
+                en={stationNames.en}
+                lang={lang}
+              />
             </p>
             <p>
               <strong>{t[rainKey(festival.rainPolicy)]}</strong> — {festivalRainNote(festival, lang)}

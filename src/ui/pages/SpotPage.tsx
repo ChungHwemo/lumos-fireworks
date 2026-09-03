@@ -7,6 +7,8 @@ import {
   linksFor,
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
+import { areaLabel, festivalArea } from "../../domain/area.ts";
+import { festivalStationPoint } from "../../domain/station.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { CONTROL_COPY, spotNameEn } from "../content.ts";
 import { NamePair, festivalTitle, spotField } from "../display.tsx";
@@ -40,11 +42,16 @@ export function SpotPage() {
   const hitting = controls.filter((control) => spot.access.controlIds.includes(control.id));
   const links = linksFor(spot.id);
   const mine = festivalReports.filter((report) => report.spotId === spot.id);
+  const area = festivalArea(festival);
+  const station = festivalStationPoint(festival);
 
   return (
     <div className="split">
       <FestivalMap
+        key={festival.id}
         launch={festival.launch}
+        area={area}
+        station={station?.coord}
         spots={spots}
         controls={controls}
         selectedId={spot.id}
@@ -59,6 +66,10 @@ export function SpotPage() {
           mapAria: t.mapAria,
           launchAria: t.launch,
           shareAria: t.share,
+          approx: t.pinApprox,
+          approxAria: areaLabel(area, lang),
+          station: t.pinStation,
+          stationAria: station?.label.ko ?? t.station,
           spotName: (row) =>
             lang === "ja" ? row.nameJa : lang === "en" ? spotNameEn(row.id, row.nameJa) : row.nameKo,
         }}
@@ -73,7 +84,7 @@ export function SpotPage() {
         </h1>
         <p className="disclaimer">
           {t.unofficial}
-          {festival.launch ? ` ${t.launchEstimate}` : ""}
+          {festival.launch ? ` ${t.launchEstimate}` : ` ${t.areaApprox}`}
         </p>
         <ShareButton title={lang === "ja" ? spot.nameJa : lang === "en" ? spotNameEn(spot.id, spot.nameJa) : spot.nameKo} />
         <p className="meta">

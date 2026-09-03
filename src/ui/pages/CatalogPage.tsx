@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals, festivals } from "../../data/catalog.ts";
+import { festivalPlace } from "../../domain/area.ts";
 import { parseFromQuery } from "../../domain/query.ts";
 import { NamePair, festivalStation, festivalTitle } from "../display.tsx";
 import { weekday } from "../i18n.ts";
@@ -105,14 +106,14 @@ export function CatalogPage() {
                 />
               </strong>
               <p>
-                {festival.prefecture} {festival.city} · {festival.startTime}–
+                {festivalPlace(festival, lang)} · {festival.startTime}–
                 {festival.endTime}
               </p>
               <p className="meta">
                 {t[rainKey(festival.rainPolicy)]}
                 {festival.paidSeats ? ` · ${t.paidSeats}` : ""}
                 {festival.nearestStationKo
-                  ? ` · ${festivalStation(festival, lang)}`
+                  ? ` · ${t.station} ${festivalStation(festival, lang)}`
                   : ""}
               </p>
             </Link>

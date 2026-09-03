@@ -1,6 +1,7 @@
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import type { DecoratedSpot } from "../../data/catalog.ts";
+import type { FestivalArea } from "../../domain/area.ts";
 import type { Coord, ControlRecord } from "../../domain/types.ts";
 import { circlePolygon } from "./circle.ts";
 import { gsiStyle, type GsiLayer } from "./gsi-style.ts";
@@ -14,6 +15,8 @@ export type HeatPoint = {
 
 type Props = {
   launch: Coord | null;
+  area?: FestivalArea;
+  station?: Coord | null;
   spots: DecoratedSpot[];
   controls: ControlRecord[];
   selectedId?: string | null;
@@ -31,12 +34,18 @@ type Props = {
     mapAria: string;
     launchAria: string;
     shareAria: string;
+    approx?: string;
+    approxAria?: string;
+    station?: string;
+    stationAria?: string;
     spotName: (spot: DecoratedSpot) => string;
   };
 };
 
 export function FestivalMap({
   launch,
+  area,
+  station,
   spots,
   controls,
   selectedId,
@@ -55,6 +64,8 @@ export function FestivalMap({
   const markers = useRef<maplibregl.Marker[]>([]);
   const state = useRef({
     launch,
+    area,
+    station,
     spots,
     controls,
     selectedId,
@@ -70,6 +81,8 @@ export function FestivalMap({
   });
   state.current = {
     launch,
+    area,
+    station,
     spots,
     controls,
     selectedId,
@@ -86,12 +99,12 @@ export function FestivalMap({
 
   useEffect(() => {
     if (!root.current) return;
-    const center = launch ?? { lng: 139.7, lat: 36.2 };
+    const center = area?.coord ?? launch ?? { lng: 139.7, lat: 36.2 };
     const map = new maplibregl.Map({
       container: root.current,
       style: gsiStyle(layer),
       center: [center.lng, center.lat],
-      zoom: launch ? 14 : 5,
+      zoom: area?.zoom ?? (launch ? 14 : 5),
       attributionControl: false,
       maxPitch: 0,
     });
@@ -109,6 +122,7 @@ export function FestivalMap({
     const redraw = () => drawOverlays(map, markers, state.current);
     map.on("load", () => {
       map.resize();
+      fitView(map, viewPoints(state.current));
       redraw();
     });
     map.on("style.load", redraw);
@@ -144,7 +158,7 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, labels]);
+  }, [launch, area, station, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, labels]);
 
   return <div ref={root} className="map" role="application" aria-label={labels?.mapAria ?? "행사 지도"} />;
 }
@@ -254,6 +268,28 @@ function drawOverlays(
         props.labels?.launchAria ?? "발사 앵커",
       ),
     );
+  } else if (props.area && props.area.precision !== "launch") {
+    markers.current.push(
+      pin(
+        map,
+        props.area.coord,
+        "pin pin-approx",
+        props.labels?.approx ?? "대략",
+        props.labels?.approxAria ?? props.labels?.approx ?? "대략 위치",
+      ),
+    );
+  }
+
+  if (props.station) {
+    markers.current.push(
+      pin(
+        map,
+        props.station,
+        "pin pin-station",
+        props.labels?.station ?? "역",
+        props.labels?.stationAria ?? props.labels?.station ?? "가까운 역",
+      ),
+    );
   }
 
   if (props.sharePin) {
@@ -287,6 +323,31 @@ function drawOverlays(
   if (focus) {
     map.easeTo({ center: [focus.lng, focus.lat], zoom: Math.max(map.getZoom(), 15) });
   }
+}
+
+function viewPoints(props: Props): Coord[] {
+  const points: Coord[] = [];
+  if (props.launch) points.push(props.launch);
+  else if (props.area) points.push(props.area.coord);
+  if (props.station) points.push(props.station);
+  return points;
+}
+
+function fitView(map: maplibregl.Map, points: Coord[]) {
+  if (points.length === 0) return;
+  if (points.length === 1) {
+    map.jumpTo({ center: [points[0].lng, points[0].lat] });
+    return;
+  }
+  const lngs = points.map((point) => point.lng);
+  const lats = points.map((point) => point.lat);
+  map.fitBounds(
+    [
+      [Math.min(...lngs), Math.min(...lats)],
+      [Math.max(...lngs), Math.max(...lats)],
+    ],
+    { padding: 72, maxZoom: 14, duration: 0 },
+  );
 }
 
 function pin(
