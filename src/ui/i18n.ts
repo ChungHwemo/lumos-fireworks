@@ -84,6 +84,11 @@ const ko = {
   pinStation: "가까운 역",
   bearing: "방위",
   overlayFireworks: "불꽃",
+  legend: "범례",
+  legendSpotOpen: "설 수 있음",
+  legendSpotPaid: "유료 게이트",
+  legendSpotBlocked: "통제로 못 섬",
+  legendSpotNumber: "번호는 아래 목록 순서입니다.",
   pitch: "고각",
 } as const;
 
@@ -171,6 +176,11 @@ const ja: Record<keyof typeof ko, string> = {
   pinStation: "最寄り駅",
   bearing: "方位",
   overlayFireworks: "花火",
+  legend: "凡例",
+  legendSpotOpen: "立てる",
+  legendSpotPaid: "有料ゲート",
+  legendSpotBlocked: "規制で立てない",
+  legendSpotNumber: "番号は下のリストの順です。",
   pitch: "仰角",
 };
 
@@ -259,6 +269,11 @@ const en: Record<keyof typeof ko, string> = {
   pinStation: "Nearest station",
   bearing: "Bearing",
   overlayFireworks: "Fireworks",
+  legend: "Legend",
+  legendSpotOpen: "Can stand here",
+  legendSpotPaid: "Paid gate",
+  legendSpotBlocked: "Blocked by control",
+  legendSpotNumber: "Numbers follow the list below.",
   pitch: "Pitch",
 };
 

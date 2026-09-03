@@ -284,6 +284,26 @@ dd { margin: 0; }
 .pin-blocked { background: rgba(255, 138, 138, 0.82); }
 .pin.is-on { outline: 2px solid rgba(255, 255, 255, 0.9); width: 32px; height: 32px; }
 
+.legend {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 3;
+  max-width: min(15rem, calc(100vw - 1rem));
+  border-radius: var(--r4);
+  padding: 0.4rem 0.6rem;
+  background: rgba(18, 12, 16, 0.55);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+.legend summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; }
+.legend ul { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
+.legend li { display: flex; align-items: center; gap: 0.45rem; }
+.legend-glyph { display: inline-flex; color: var(--ink); }
+.legend-chip { pointer-events: none; }
+
 .maplibregl-ctrl-attrib { font-size: 10px; }
 .maplibregl-ctrl-group,
 .maplibregl-ctrl-attrib {

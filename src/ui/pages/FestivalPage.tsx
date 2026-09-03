@@ -25,6 +25,7 @@ import { localeTag, weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
 import { LangSwitch } from "../LangSwitch.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
+import { MapLegend } from "../map/MapLegend.tsx";
 import type { GsiLayer } from "../map/gsi-style.ts";
 import { parseShareCoord } from "../share.ts";
 import { ShareButton } from "../ShareButton.tsx";
@@ -94,7 +95,7 @@ export function FestivalPage() {
           launch: t.pinLaunch,
           share: t.pinShare,
           mapAria: t.mapAria,
-          launchAria: t.launch,
+          launchAria: t.pinLaunch,
           shareAria: t.share,
           approx: t.pinLaunchUnknown,
           approxAria: areaLabel(area, lang),
@@ -109,6 +110,7 @@ export function FestivalPage() {
           setParams(params, { replace: true });
         }}
       />
+      <MapLegend />
       <section className="sheet">
         <Link className="back" to="/">
           ← {t.back}

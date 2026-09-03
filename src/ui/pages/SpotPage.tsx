@@ -66,7 +66,7 @@ export function SpotPage() {
           launch: t.pinLaunch,
           share: t.pinShare,
           mapAria: t.mapAria,
-          launchAria: t.launch,
+          launchAria: t.pinLaunch,
           shareAria: t.share,
           approx: t.pinLaunchUnknown,
           approxAria: areaLabel(area, lang),
