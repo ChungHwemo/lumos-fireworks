@@ -8,6 +8,21 @@
       name="description"
       content="2026년 9월 4일 이후 일본 花火大会 비공식 지도. 거리와 통제를 함께 봅니다."
     />
+    <script>
+      // GitHub Pages 사용자 사이트는 루트 404.html만 쓴다. 거기가 넘겨준 원래 경로를 되돌린다.
+      (function () {
+        try {
+          var saved = sessionStorage.getItem("lumos-fireworks-path");
+          if (!saved) return;
+          sessionStorage.removeItem("lumos-fireworks-path");
+          if (saved !== location.pathname + location.search + location.hash) {
+            history.replaceState(null, "", saved);
+          }
+        } catch (err) {
+          /* 세션 저장소가 막혀 있으면 목록으로 남는다 */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

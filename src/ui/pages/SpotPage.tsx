@@ -11,7 +11,7 @@ import { areaLabel, festivalArea } from "../../domain/area.ts";
 import { festivalStationPoint } from "../../domain/station.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { CONTROL_COPY, spotNameEn } from "../content.ts";
-import { NamePair, festivalTitle, spotField } from "../display.tsx";
+import { NamePair, festivalStation, festivalTitle, spotField } from "../display.tsx";
 import { useLang } from "../Lang.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
 import { appleDir, googleDir } from "../share.ts";
@@ -69,7 +69,7 @@ export function SpotPage() {
           approx: t.pinApprox,
           approxAria: areaLabel(area, lang),
           station: t.pinStation,
-          stationAria: station?.label.ko ?? t.station,
+          stationAria: festivalStation(festival, lang),
           spotName: (row) =>
             lang === "ja" ? row.nameJa : lang === "en" ? spotNameEn(row.id, row.nameJa) : row.nameKo,
         }}

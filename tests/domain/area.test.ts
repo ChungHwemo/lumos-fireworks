@@ -83,3 +83,23 @@ test("시드 행사는 전부 대략 위치를 갖는다", () => {
     expect(area.coord.lat).not.toBe(36.2);
   }
 });
+
+test("지구 라벨을 써도 현·시가 사라지지 않는다", () => {
+  const yodogawa = {
+    prefecture: "大阪府",
+    city: "大阪市",
+    venueJa: "淀川河川公園",
+    venueKo: "요도가와 하천공원",
+  };
+  expect(festivalPlace(yodogawa, "en")).toBe("Yodo River park, Osaka");
+  expect(festivalPlace(yodogawa, "ko")).toBe("오사카부 오사카시 요도가와 하천공원");
+  expect(festivalPlace(yodogawa, "ja")).toBe("大阪府 大阪市 淀川河川公園");
+
+  const katakai = {
+    prefecture: "新潟県",
+    city: "小千谷市",
+    venueJa: "小千谷市片貝",
+    venueKo: "오지야시 카타카이",
+  };
+  expect(festivalPlace(katakai, "en")).toBe("Katakai, Ojiya, Niigata");
+});

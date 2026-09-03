@@ -24,7 +24,7 @@ export function LookPage() {
   return (
     <div className="split">
       {festival.launch && view ? (
-        <LookViewer from={spot} launch={festival.launch} water={water} />
+        <LookViewer from={spot} launch={festival.launch} water={water} label={t.look3d} />
       ) : (
         <div className="look look-empty">
           <p>{t.lookNeedLaunch}</p>
@@ -41,7 +41,7 @@ export function LookPage() {
           />
         </Link>
         <h1>{t.look3d}</h1>
-        <p className="disclaimer">{t.look3dNote}</p>
+        <p className="disclaimer">{t.unofficial} {t.look3dNote}</p>
         <p>
           <NamePair
             ko={spot.nameKo}

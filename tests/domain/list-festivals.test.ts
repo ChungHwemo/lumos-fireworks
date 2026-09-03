@@ -106,3 +106,29 @@ test("UTC 입력이어도 도쿄 날짜로 자른다", () => {
   expect(isFestivalDay(festival, new Date("2026-09-11T15:30:00Z"))).toBe(true);
   expect(isFestivalDay(festival, new Date("2026-09-11T14:30:00Z"))).toBe(false);
 });
+
+const LONGRUN = {
+  id: "toya-longrun-2026",
+  seriesId: "toya-longrun",
+  date: "2026-04-28",
+  dateEnd: "2026-10-31",
+  prefecture: "北海道",
+  city: "洞爺湖町",
+  confirmation: "confirmed" as const,
+  paidSeats: false,
+  rainPolicy: "hold" as const,
+  launch: { lng: 140.8, lat: 42.56 },
+};
+
+test("시즌 행사는 남기되 지난 시작일로 목록 맨 위에 오지 않는다", () => {
+  const result = listFestivals([...FIXTURE, LONGRUN], {
+    from: "2026-09-04",
+    confirmation: "confirmed",
+  });
+  expect(result.map((f) => f.id)).toEqual([
+    "toya-longrun-2026",
+    "sakata-hanabi-2026",
+    "atami-kaijo-2026-09-13",
+    "atami-kaijo-2026-10-12",
+  ]);
+});

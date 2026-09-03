@@ -18,10 +18,12 @@ export function LookViewer({
   from,
   launch,
   water = false,
+  label,
 }: {
   from: Coord;
   launch: Coord;
   water?: boolean;
+  label: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
 
@@ -139,5 +141,5 @@ export function LookViewer({
     };
   }, [from.lng, from.lat, launch.lng, launch.lat, water]);
 
-  return <div ref={root} className="look" role="img" aria-label="시선 스케치" />;
+  return <div ref={root} className="look" role="img" aria-label={label} />;
 }

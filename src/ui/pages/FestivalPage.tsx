@@ -111,9 +111,10 @@ export function FestivalPage() {
           ← {t.back}
         </Link>
         <p className="kicker">
-          {festival.date}
-          {festival.dateEnd ? `–${festival.dateEnd}` : ""} (
-          {weekday(festival.date, lang)}) · {festival.startTime}–{festival.endTime}
+          {festival.dateEnd
+            ? `${festival.date}–${festival.dateEnd}`
+            : `${festival.date} (${weekday(festival.date, lang)})`}{" "}
+          · {festival.startTime}–{festival.endTime}
           {isFestivalDay(festival, new Date()) ? ` · ${t.today}` : ""}
         </p>
         <h1>
@@ -123,7 +124,7 @@ export function FestivalPage() {
           {t.unofficial}
           {festival.launch ? ` ${t.launchEstimate}` : ` ${t.areaApprox}`}
         </p>
-        <nav className="tabs" aria-label="sections">
+        <nav className="tabs">
           <Tab current={tab} id="event" onClick={setTab}>
             {t.tabEvent}
           </Tab>

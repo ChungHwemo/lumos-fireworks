@@ -39,7 +39,7 @@ export function CatalogPage() {
   return (
     <main className="page page-list">
       <header className="hero">
-        <p className="kicker">Asia/Tokyo · from {from}</p>
+        <p className="kicker">Asia/Tokyo · {from}</p>
         <h1>{t.appTitle}</h1>
         <p className="lede">{t.appBlurb}</p>
         <LangSwitch />
@@ -93,9 +93,9 @@ export function CatalogPage() {
           <li key={festival.id}>
             <Link className="card" to={`/e/${festival.id}`}>
               <time dateTime={festival.date}>
-                {festival.date}
-                {festival.dateEnd ? `–${festival.dateEnd}` : ""} (
-                {weekday(festival.date, lang)})
+                {festival.dateEnd
+                  ? `${festival.date}–${festival.dateEnd}`
+                  : `${festival.date} (${weekday(festival.date, lang)})`}
               </time>
               <strong>
                 <NamePair

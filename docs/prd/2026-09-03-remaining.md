@@ -21,9 +21,29 @@
 - 공식 URL이 잠긴 행사 시드. 沼田/沖縄かなさ는 URL 미잠금이라 없음
 - 시선 스케치(Three.js). 예상 혼잡 레이어. 로컬 제보
 
-## 아직 사람 눈으로 볼 것
+## 사람 눈으로 본 것
 
-- R1: 실제 Chrome/Safari에서 熱海·酒田 지도에 地理院タイル이 보이는지. Cursor 내장 브라우저는 WebGL 합성이 검게 나올 수 있다.
+- R1 **통과** (2026-09-03, macOS Chrome, 배포본 https://chunghwemo.github.io/lumos-fireworks/).
+  熱海(`atami-kaijo-2026-09-13`)·酒田(`sakata-hanabi-2026`) 둘 다 `cyberjapandata.gsi.go.jp/xyz/pale`
+  타일이 그려진다. 등고선·역명·해안선까지 읽힌다. 타일 응답은 200 / `image/png` /
+  `access-control-allow-origin: *`. WebGL 컨텍스트 손실 없음.
+  주의: 페이지 전체 스크린샷은 WebGL 캔버스가 합성되기 전에 찍히는 경우가 있어 지도가
+  빈 칸으로 나온다. 확인은 영역 확대 캡처로 한다.
+
+## 2026-09-03 검수 사이클에서 고친 것
+
+PRD 요구 단위별 감사 8건 → 후보 5건 → 반증 통과 4건. 여기에 직접 찾은 정렬 문제 1건.
+
+- `/e/{id}/p/{id}/3d` 화면에 비공식 고지가 없었다. 제품 원칙 1·성공 기준 위반. (`LookPage.tsx`)
+- 영어에서 지구(district) 라벨을 쓰면 현이 통째로 사라졌다. `Yodo River park` → `Yodo River park, Osaka`. 淀川·万博 라벨에 시를 넣었다. (`area.ts`)
+- 언어 전환을 따르지 않던 UI 문자열 4개. 시선 스케치 `aria-label`, 명당 화면 역 핀 이름, 탭 `aria-label="sections"`, 목록 머리말 `from`. (`LookViewer.tsx`, `SpotPage.tsx`, `FestivalPage.tsx`, `CatalogPage.tsx`)
+- `ResearchLink`에 원본 IA의 `fallbackDescription`이 없었다. optional로 추가. (`types.ts`)
+- `Hwemo-Chung.github.io` 미러에서 딥링크가 목록으로 떨어졌다. 사용자 사이트는 루트 `404.html`만 쓰므로 하위 폴더 `404.html`이 무시된다. 루트 404가 `sessionStorage`에 넘겨준 경로를 `index.html`이 되돌린다. (`index.html`)
+- 시즌 행사(`dateEnd`)가 이미 지난 시작일로 목록 맨 위에 고정됐다. 정렬 키를 `max(date, from)`으로 바꿨다. 기간 행이 시작일 요일을 표시하던 것도 뺐다. (`festival.ts`, 두 화면)
+
+반증으로 기각한 것: `distanceMeters` null 방향 불변식에 테스트가 없다는 지적. PRD 161행은
+두 수의 1m 오차 조항이고, 성공 기준의 CI 항목은 스키마 **참조** 무결성이다. 값 불변식 테스트를
+PRD가 요구하지 않는다.
 
 ## 하지 않음
 

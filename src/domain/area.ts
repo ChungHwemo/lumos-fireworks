@@ -43,8 +43,8 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
     re: /万博|만박/,
     place: {
       coord: { lng: 135.386, lat: 34.654 },
-      ko: "오사카 만박 지구",
-      ja: "大阪・万博",
+      ko: "오사카시 만박 지구",
+      ja: "大阪市・万博",
       en: "Osaka Expo area",
     },
   },
@@ -52,8 +52,8 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
     re: /淀川|요도가와/,
     place: {
       coord: { lng: 135.486, lat: 34.738 },
-      ko: "요도가와 하천공원",
-      ja: "淀川河川公園",
+      ko: "오사카시 요도가와 하천공원",
+      ja: "大阪市 淀川河川公園",
       en: "Yodo River park",
     },
   },
@@ -172,9 +172,9 @@ export function festivalPlace(
     return district ? `${festival.prefecture} ${district.ja}` : `${festival.prefecture} ${festival.city}`;
   }
   if (lang === "en") {
-    if (district) return district.en;
     const cityEn = city?.en ?? festival.city;
     const prefEn = prefecture?.en ?? festival.prefecture;
+    if (district) return district.en.includes(prefEn) ? district.en : `${district.en}, ${prefEn}`;
     return cityEn === prefEn ? cityEn : `${cityEn}, ${prefEn}`;
   }
   if (district) return `${prefecture?.ko ?? festival.prefecture} ${district.ko}`;

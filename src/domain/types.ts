@@ -117,6 +117,7 @@ export type ResearchLink = {
   url: string;
   kind: string;
   fallbackTitle: string;
+  fallbackDescription?: string;
   note: string;
   spotIds: string[] | "*";
 };
