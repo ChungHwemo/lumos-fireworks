@@ -3,7 +3,9 @@ import { useEffect, useRef } from "react";
 import type { DecoratedSpot } from "../../data/catalog.ts";
 import type { FestivalArea } from "../../domain/area.ts";
 import type { Coord, ControlRecord } from "../../domain/types.ts";
+import { unknownLaunchOffset } from "../../domain/burst.ts";
 import { circlePolygon } from "./circle.ts";
+import { createFireworksLayer, FIREWORKS_LAYER_ID } from "./fireworks-layer.ts";
 import { gsiStyle, type GsiLayer } from "./gsi-style.ts";
 
 export type HeatPoint = {
@@ -25,6 +27,8 @@ type Props = {
   showControls: boolean;
   showSpots: boolean;
   showCrowd?: boolean;
+  fireworks?: boolean;
+  fireworksSeed?: string;
   layer: GsiLayer;
   onSelect: (spotId: string) => void;
   onMapClick?: (coord: Coord) => void;
@@ -54,6 +58,8 @@ export function FestivalMap({
   showControls,
   showSpots,
   showCrowd = false,
+  fireworks = true,
+  fireworksSeed,
   layer,
   onSelect,
   onMapClick,
@@ -61,6 +67,7 @@ export function FestivalMap({
 }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const fireworksRef = useRef<ReturnType<typeof createFireworksLayer> | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const state = useRef({
     launch,
@@ -74,6 +81,8 @@ export function FestivalMap({
     showControls,
     showSpots,
     showCrowd,
+    fireworks,
+    fireworksSeed,
     layer,
     onSelect,
     onMapClick,
@@ -91,6 +100,8 @@ export function FestivalMap({
     showControls,
     showSpots,
     showCrowd,
+    fireworks,
+    fireworksSeed,
     layer,
     onSelect,
     onMapClick,
@@ -130,9 +141,20 @@ export function FestivalMap({
         firstStyle = false;
         map.resize();
         fitView(map, viewPoints(state.current));
+        if (orbiting) orbitStep();
+      }
+      if (!map.getLayer(FIREWORKS_LAYER_ID)) {
+        const seed = state.current.fireworksSeed ?? "unknown";
+        const base = state.current.launch ?? state.current.area?.coord ?? null;
+        if (base) {
+          const anchor = state.current.launch ?? unknownLaunchOffset(base, seed);
+          const created = createFireworksLayer(anchor);
+          fireworksRef.current = created;
+          map.addLayer(created);
+          syncRunning();
+        }
       }
       redraw();
-      if (orbiting) orbitStep();
     });
     map.on("click", (event) => {
       state.current.onMapClick?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
@@ -166,15 +188,29 @@ export function FestivalMap({
     };
     map.on("movestart", onUserMove);
 
+    // 불꽃 정지 조건: 토글 꺼짐, 탭 백그라운드, 모션 감소 설정 중 하나라도 걸리면 멈춘다.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncRunning = () => {
+      fireworksRef.current?.setRunning(
+        state.current.fireworks !== false && !document.hidden && !reduced.matches,
+      );
+    };
+    document.addEventListener("visibilitychange", syncRunning);
+    reduced.addEventListener("change", syncRunning);
+    syncRunning();
+
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(host);
 
     return () => {
+      document.removeEventListener("visibilitychange", syncRunning);
+      reduced.removeEventListener("change", syncRunning);
       ro.disconnect();
       for (const marker of markers.current) marker.remove();
       markers.current = [];
       window.clearTimeout(orbitTimer);
       host.removeEventListener("pointerdown", stopOrbit, { capture: true });
+      fireworksRef.current = null;
       map.remove();
       mapRef.current = null;
     };
@@ -196,7 +232,14 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, area, station, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, labels]);
+  }, [launch, area, station, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, fireworks, fireworksSeed, labels]);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    fireworksRef.current?.setRunning(
+      fireworks !== false && !document.hidden && !reduced.matches,
+    );
+  }, [fireworks]);
 
   return <div ref={root} className="map" role="application" aria-label={labels?.mapAria ?? "행사 지도"} />;
 }

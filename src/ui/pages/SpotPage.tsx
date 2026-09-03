@@ -59,6 +59,8 @@ export function SpotPage() {
         showControls
         showSpots
         showCrowd
+        fireworks
+        fireworksSeed={festival.id}
         layer="pale"
         labels={{
           launch: t.pinLaunch,

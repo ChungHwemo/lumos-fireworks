@@ -41,6 +41,7 @@ export function FestivalPage() {
   const layer = (params.get("map") === "std" ? "std" : "pale") as GsiLayer;
   const showControls = params.get("ctl") !== "0";
   const showCrowd = params.get("crowd") !== "0";
+  const showFireworks = params.get("fw") !== "0";
   const sharePin = parseShareCoord(params);
   const [q, setQ] = useState("");
   const [reports, setReports] = useState(loadReports);
@@ -85,6 +86,8 @@ export function FestivalPage() {
         showControls={showControls && tab !== "settings"}
         showSpots={tab !== "settings"}
         showCrowd={showCrowd && tab !== "settings"}
+        fireworks={showFireworks}
+        fireworksSeed={festival.id}
         layer={layer}
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
         labels={{
@@ -258,6 +261,17 @@ export function FestivalPage() {
                   }}
                 />
                 {t.overlayCrowd}
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showFireworks}
+                  onChange={(e) => {
+                    params.set("fw", e.target.checked ? "1" : "0");
+                    setParams(params, { replace: true });
+                  }}
+                />
+                {t.overlayFireworks}
               </label>
             </div>
             <p className="note">{t.notLiveCrowd}</p>

@@ -83,6 +83,7 @@ const ko = {
   pinShare: "공",
   pinStation: "역",
   bearing: "방위",
+  overlayFireworks: "불꽃",
   pitch: "고각",
 } as const;
 
@@ -169,6 +170,7 @@ const ja: Record<keyof typeof ko, string> = {
   pinShare: "共",
   pinStation: "駅",
   bearing: "方位",
+  overlayFireworks: "花火",
   pitch: "仰角",
 };
 
@@ -256,6 +258,7 @@ const en: Record<keyof typeof ko, string> = {
   pinShare: "S",
   pinStation: "St",
   bearing: "Bearing",
+  overlayFireworks: "Fireworks",
   pitch: "Pitch",
 };
 
