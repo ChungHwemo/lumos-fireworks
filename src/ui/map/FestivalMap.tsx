@@ -139,7 +139,8 @@ export function FestivalMap({
     });
 
     // 진입 오비트. 발사점을 중심으로 90°를 40초에 돈다. 사용자가 만지면 멈추고 다시 돌지 않는다.
-    let orbiting = launch != null || area != null;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let orbiting = (launch != null || area != null) && !reducedMotion.matches;
     let orbitTimer = 0;
     const orbitStep = () => {
       if (!orbiting) return;
@@ -147,7 +148,6 @@ export function FestivalMap({
         bearing: map.getBearing() + 90,
         duration: 40000,
         easing: (t) => t,
-        essential: false,
       });
       orbitTimer = window.setTimeout(orbitStep, 40000);
     };
@@ -159,6 +159,12 @@ export function FestivalMap({
     };
     // 캡처 단계라 마커의 stopPropagation 을 타지 않는다. 캔버스 드래그·핀 탭·컨트롤 클릭을 전부 받는다.
     host.addEventListener("pointerdown", stopOrbit, { capture: true });
+    // 휠 줌·키보드 패닝은 pointerdown 을 거치지 않는다. 사용자가 일으킨 이동만 잡는다.
+    // 우리 easeTo 는 originalEvent 가 없어 스스로를 멈추지 않는다.
+    const onUserMove = (event: { originalEvent?: unknown }) => {
+      if (event.originalEvent) stopOrbit();
+    };
+    map.on("movestart", onUserMove);
 
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(host);
