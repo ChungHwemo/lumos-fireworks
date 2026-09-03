@@ -66,6 +66,7 @@ export function createFireworksLayer(origin: Coord): FireworksLayer {
   let camera: THREE.Camera | null = null;
   let scene: THREE.Scene | null = null;
   let renderer: THREE.WebGLRenderer | null = null;
+  let texture: THREE.CanvasTexture | null = null;
   let groups: Group[] = [];
   let shells: (Shell | null)[] = [];
   let startedAt = 0;
@@ -90,7 +91,7 @@ export function createFireworksLayer(origin: Coord): FireworksLayer {
       scene.rotateX(Math.PI / 2);
       scene.scale.multiply(new THREE.Vector3(1, 1, -1));
 
-      const texture = sparkTexture();
+      texture = sparkTexture();
       groups = [];
       shells = [];
 
@@ -165,6 +166,9 @@ export function createFireworksLayer(origin: Coord): FireworksLayer {
       }
       groups = [];
       shells = [];
+      // 텍스처는 모든 머티리얼이 공유한다. material.dispose() 는 이걸 놓아주지 않는다.
+      texture?.dispose();
+      texture = null;
       renderer?.dispose();
       renderer = null;
       scene = null;
