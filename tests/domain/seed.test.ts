@@ -16,6 +16,7 @@ test("시드 카탈로그는 2026-09-04 이전 행사를 보여 주지 않는다
     id: string;
     seriesId: string;
     date: string;
+    dateEnd?: string;
     prefecture: string;
     city: string;
     confirmation: "confirmed" | "unconfirmed";
@@ -29,11 +30,17 @@ test("시드 카탈로그는 2026-09-04 이전 행사를 보여 주지 않는다
     confirmation: "confirmed",
   });
 
-  expect(listed.every((festival) => festival.date >= "2026-09-04")).toBe(true);
+  expect(
+    listed.every((festival) => (festival.dateEnd ?? festival.date) >= "2026-09-04"),
+  ).toBe(true);
   expect(listed.some((festival) => festival.id === "sakata-hanabi-2026")).toBe(
     true,
   );
   expect(listed.some((festival) => festival.id === "atami-kaijo-2026-09-13")).toBe(
+    true,
+  );
+  expect(listed.some((festival) => festival.id === "toya-longrun-2026")).toBe(true);
+  expect(listed.some((festival) => festival.id === "hokkaido-geijutsu-2026")).toBe(
     true,
   );
 });

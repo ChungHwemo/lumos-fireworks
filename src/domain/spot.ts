@@ -23,6 +23,19 @@ export function distanceMetersToLaunch(
   );
 }
 
+export function filterSpotsByText<
+  T extends { nameKo: string; nameJa: string; aliases: string[] },
+>(spots: readonly T[], query: string): T[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return spots.slice();
+  return spots.filter((spot) => {
+    const hay = [spot.nameKo, spot.nameJa, ...spot.aliases]
+      .join("\n")
+      .toLowerCase();
+    return hay.includes(needle);
+  });
+}
+
 export function sortSpots<T extends SortableSpot>(spots: readonly T[]): T[] {
   return spots.slice().sort((a, b) => {
     const rank = (spot: SortableSpot) => {

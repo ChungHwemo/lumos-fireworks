@@ -7,6 +7,7 @@ import { accessBadge, type AccessBadge } from "../domain/badge.ts";
 import { assessSpotAccess } from "../domain/control.ts";
 import { listFestivalDates, listFestivals } from "../domain/festival.ts";
 import { assertCatalogIntegrity } from "../domain/integrity.ts";
+import { FROM_DEFAULT } from "../domain/query.ts";
 import {
   controlsForFestival,
   spotsForFestival,
@@ -22,7 +23,7 @@ import type {
   SpotRecord,
 } from "../domain/types.ts";
 
-export const FROM_DEFAULT = "2026-09-04";
+export { FROM_DEFAULT };
 
 export const festivals = festivalsJson.festivals as FestivalRecord[];
 export const spots = spotsJson.spots as SpotRecord[];

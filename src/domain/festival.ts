@@ -6,7 +6,8 @@ export function listFestivals(
 ): Festival[] {
   return catalog
     .filter((festival) => {
-      if (festival.date < query.from) return false;
+      const end = festival.dateEnd ?? festival.date;
+      if (end < query.from) return false;
       if (festival.confirmation !== query.confirmation) return false;
       if (query.rainPolicy && festival.rainPolicy !== query.rainPolicy) {
         return false;
@@ -37,5 +38,6 @@ export function isFestivalDay(festival: Festival, now: Date): boolean {
     month: "2-digit",
     day: "2-digit",
   }).format(now);
-  return tokyoDate === festival.date;
+  const end = festival.dateEnd ?? festival.date;
+  return tokyoDate >= festival.date && tokyoDate <= end;
 }

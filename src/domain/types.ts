@@ -10,6 +10,7 @@ export type Festival = {
   id: string;
   seriesId: string;
   date: string;
+  dateEnd?: string;
   prefecture: string;
   city: string;
   confirmation: Confirmation;
@@ -86,6 +87,7 @@ export type SpotRecord = Coord & {
   foodKo: string;
   transitKo: string;
   crowdKo: string;
+  crowdLevel: 1 | 2 | 3 | 4 | 5;
   distanceMeters: number | null;
   walkMeters: number | null;
   isViewpoint: true;
