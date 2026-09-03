@@ -1,19 +1,21 @@
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import type { DecoratedSpot } from "../../data/catalog.ts";
-import type { ControlRecord } from "../../domain/types.ts";
+import type { Coord, ControlRecord } from "../../domain/types.ts";
 import { circlePolygon } from "./circle.ts";
 import { gsiStyle, type GsiLayer } from "./gsi-style.ts";
 
 type Props = {
-  launch: { lng: number; lat: number } | null;
+  launch: Coord | null;
   spots: DecoratedSpot[];
   controls: ControlRecord[];
   selectedId?: string | null;
+  sharePin?: Coord | null;
   showControls: boolean;
   showSpots: boolean;
   layer: GsiLayer;
   onSelect: (spotId: string) => void;
+  onMapClick?: (coord: Coord) => void;
 };
 
 export function FestivalMap({
@@ -21,16 +23,40 @@ export function FestivalMap({
   spots,
   controls,
   selectedId,
+  sharePin,
   showControls,
   showSpots,
   layer,
   onSelect,
+  onMapClick,
 }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
-  const state = useRef({ launch, spots, controls, selectedId, showControls, showSpots, layer, onSelect });
-  state.current = { launch, spots, controls, selectedId, showControls, showSpots, layer, onSelect };
+  const state = useRef({
+    launch,
+    spots,
+    controls,
+    selectedId,
+    sharePin,
+    showControls,
+    showSpots,
+    layer,
+    onSelect,
+    onMapClick,
+  });
+  state.current = {
+    launch,
+    spots,
+    controls,
+    selectedId,
+    sharePin,
+    showControls,
+    showSpots,
+    layer,
+    onSelect,
+    onMapClick,
+  };
 
   useEffect(() => {
     if (!root.current) return;
@@ -41,9 +67,8 @@ export function FestivalMap({
       center: [center.lng, center.lat],
       zoom: launch ? 14 : 5,
       attributionControl: false,
-      preserveDrawingBuffer: true,
+      maxPitch: 0,
     });
-    (window as unknown as { __hanabiMap?: maplibregl.Map }).__hanabiMap = map;
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
     map.addControl(
@@ -61,6 +86,9 @@ export function FestivalMap({
       redraw();
     });
     map.on("style.load", redraw);
+    map.on("click", (event) => {
+      state.current.onMapClick?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
+    });
 
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(root.current);
@@ -77,14 +105,11 @@ export function FestivalMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.loaded()) return;
-    if (map.getStyle()?.sources && "gsi" in (map.getStyle()?.sources ?? {})) {
-      const src = map.getSource("gsi") as maplibregl.RasterTileSource | undefined;
-      if (src && "setTiles" in src) {
-        const id = layer === "pale" ? "pale" : "std";
-        src.setTiles([`https://cyberjapandata.gsi.go.jp/xyz/${id}/{z}/{x}/{y}.png`]);
-        drawOverlays(map, markers, state.current);
-        return;
-      }
+    const src = map.getSource("gsi") as maplibregl.RasterTileSource | undefined;
+    if (src && "setTiles" in src) {
+      const id = layer === "pale" ? "pale" : "std";
+      src.setTiles([`https://cyberjapandata.gsi.go.jp/xyz/${id}/{z}/{x}/{y}.png`]);
+      return;
     }
     map.setStyle(gsiStyle(layer));
   }, [layer]);
@@ -93,7 +118,7 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, spots, controls, selectedId, showControls, showSpots]);
+  }, [launch, spots, controls, selectedId, sharePin, showControls, showSpots]);
 
   return <div ref={root} className="map" role="application" aria-label="행사 지도" />;
 }
@@ -141,14 +166,11 @@ function drawOverlays(
   }
 
   if (props.launch) {
-    const el = document.createElement("button");
-    el.className = "pin pin-launch";
-    el.type = "button";
-    el.textContent = "발";
-    el.setAttribute("aria-label", "발사 앵커");
-    markers.current.push(
-      new maplibregl.Marker({ element: el }).setLngLat([props.launch.lng, props.launch.lat]).addTo(map),
-    );
+    markers.current.push(pin(map, props.launch, "pin pin-launch", "발", "발사 앵커"));
+  }
+
+  if (props.sharePin) {
+    markers.current.push(pin(map, props.sharePin, "pin pin-share", "공", "공유 좌표"));
   }
 
   if (props.showSpots) {
@@ -158,15 +180,31 @@ function drawOverlays(
       el.className = `pin pin-${spot.badge ?? "open"}${spot.id === props.selectedId ? " is-on" : ""}`;
       el.textContent = String(index + 1);
       el.setAttribute("aria-label", spot.nameKo);
-      el.addEventListener("click", () => props.onSelect(spot.id));
-      markers.current.push(
-        new maplibregl.Marker({ element: el }).setLngLat([spot.lng, spot.lat]).addTo(map),
-      );
+      el.addEventListener("click", (event) => {
+        event.stopPropagation();
+        props.onSelect(spot.id);
+      });
+      markers.current.push(new maplibregl.Marker({ element: el }).setLngLat([spot.lng, spot.lat]).addTo(map));
     }
   }
 
-  const focus = props.spots.find((spot) => spot.id === props.selectedId);
+  const focus = props.spots.find((spot) => spot.id === props.selectedId) ?? props.sharePin;
   if (focus) {
     map.easeTo({ center: [focus.lng, focus.lat], zoom: Math.max(map.getZoom(), 15) });
   }
+}
+
+function pin(
+  map: maplibregl.Map,
+  coord: Coord,
+  className: string,
+  label: string,
+  aria: string,
+) {
+  const el = document.createElement("button");
+  el.className = className;
+  el.type = "button";
+  el.textContent = label;
+  el.setAttribute("aria-label", aria);
+  return new maplibregl.Marker({ element: el }).setLngLat([coord.lng, coord.lat]).addTo(map);
 }

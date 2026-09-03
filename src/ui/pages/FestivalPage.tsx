@@ -12,7 +12,7 @@ import { weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
 import type { GsiLayer } from "../map/gsi-style.ts";
-import { shareUrl } from "../share.ts";
+import { parseShareCoord, shareUrl } from "../share.ts";
 
 export function FestivalPage() {
   const { festivalId = "" } = useParams();
@@ -23,6 +23,7 @@ export function FestivalPage() {
   const tab = params.get("tab") ?? "event";
   const layer = (params.get("map") === "std" ? "std" : "pale") as GsiLayer;
   const showControls = params.get("ctl") !== "0";
+  const sharePin = parseShareCoord(params);
   const [toast, setToast] = useState("");
 
   const spots = useMemo(() => decoratedSpots(festivalId), [festivalId]);
@@ -43,10 +44,16 @@ export function FestivalPage() {
         launch={festival.launch}
         spots={spots}
         controls={controls}
+        sharePin={sharePin}
         showControls={showControls && tab !== "settings"}
         showSpots={tab !== "settings"}
         layer={layer}
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
+        onMapClick={(coord) => {
+          params.set("lng", coord.lng.toFixed(5));
+          params.set("lat", coord.lat.toFixed(5));
+          setParams(params, { replace: true });
+        }}
       />
       <section className="sheet">
         <Link className="back" to="/">
