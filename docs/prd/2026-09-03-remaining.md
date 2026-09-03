@@ -39,6 +39,7 @@ PRD 요구 단위별 감사 8건 → 후보 5건 → 반증 통과 4건. 여기�
 - 언어 전환을 따르지 않던 UI 문자열 4개. 시선 스케치 `aria-label`, 명당 화면 역 핀 이름, 탭 `aria-label="sections"`, 목록 머리말 `from`. (`LookViewer.tsx`, `SpotPage.tsx`, `FestivalPage.tsx`, `CatalogPage.tsx`)
 - `ResearchLink`에 원본 IA의 `fallbackDescription`이 없었다. optional로 추가. (`types.ts`)
 - `Hwemo-Chung.github.io` 미러에서 딥링크가 목록으로 떨어졌다. 사용자 사이트는 루트 `404.html`만 쓰므로 하위 폴더 `404.html`이 무시된다. 루트 404가 `sessionStorage`에 넘겨준 경로를 `index.html`이 되돌린다. (`index.html`)
+- 360px에서 터치 타깃이 작았다. 언어 버튼 37px, 필터 체크박스 라벨 21px, 시트 링크 14–24px, 지도 컨트롤 29px. `(max-width: 640px), (pointer: coarse)`에서 44px로 올렸다. 지도 위 명당 핀은 뺐다. 44px로 키우면 360px 화면을 덮는다. (`styles.css`)
 - 시즌 행사(`dateEnd`)가 이미 지난 시작일로 목록 맨 위에 고정됐다. 정렬 키를 `max(date, from)`으로 바꿨다. 기간 행이 시작일 요일을 표시하던 것도 뺐다. (`festival.ts`, 두 화면)
 
 반증으로 기각한 것: `distanceMeters` null 방향 불변식에 테스트가 없다는 지적. PRD 161행은

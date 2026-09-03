@@ -318,6 +318,30 @@ dd { margin: 0; }
   .tabs button { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
 }
 
+/* 손가락은 44px를 찾는다. 지도 위 명당 핀은 제외한다. 44px로 키우면 360px 화면을 덮는다. */
+@media (max-width: 640px), (pointer: coarse) {
+  select,
+  button:not(.pin),
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  .actions a,
+  .note a,
+  .back {
+    min-height: 44px;
+  }
+  select,
+  button:not(.pin),
+  .actions a,
+  .note a,
+  .back {
+    display: inline-flex;
+    align-items: center;
+  }
+  .filters label { min-height: 44px; }
+  .filters input[type="checkbox"] { width: 1.4rem; height: 1.4rem; }
+  .maplibregl-ctrl-group button { width: 44px; height: 44px; }
+}
+
 @media (min-width: 880px) {
   .sheet {
     top: 1rem;
