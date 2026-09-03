@@ -116,8 +116,8 @@ export function FestivalMap({
       container: root.current,
       style: gsiStyle(layer),
       center: [center.lng, center.lat],
-      zoom: area?.zoom ?? (launch ? 15 : 5),
-      pitch: launch || area ? 83 : 0,
+      zoom: launch ? 15 : (area?.zoom ?? 5),
+      pitch: launch || area ? 78 : 0,
       bearing: 0,
       canvasContextAttributes: { antialias: true },
       attributionControl: false,
@@ -141,7 +141,9 @@ export function FestivalMap({
       if (firstStyle) {
         firstStyle = false;
         map.resize();
-        fitView(map, viewPoints(state.current));
+        // 발사 앵커가 있으면 그 위를 잡는다. bounds 를 맞추면 카메라가 앵커에서 밀려나
+        // 불꽃이 능선 뒤로 들어가 깊이 테스트에 잘린다.
+        if (!state.current.launch) fitView(map, viewPoints(state.current));
         if (orbiting) orbitStep();
       }
       if (!map.getLayer(FIREWORKS_LAYER_ID)) {
@@ -416,6 +418,15 @@ function fitView(map: maplibregl.Map, points: Coord[]) {
   );
 }
 
+// 熱海처럼 발사점·역·명당이 한 곳에 몰리면 라벨 칩이 번호 핀을 덮는다.
+// 종류마다 세로로 어긋나게 띄운다. 20px 안쪽이라 지도 축척에서는 무시할 만하다.
+const PIN_OFFSET: Record<PinKind, [number, number]> = {
+  launch: [0, -20],
+  launchUnknown: [0, -20],
+  station: [0, 20],
+  share: [0, 40],
+};
+
 function pin(
   map: maplibregl.Map,
   coord: Coord,
@@ -433,5 +444,7 @@ function pin(
   text.textContent = label;
   el.appendChild(text);
   el.setAttribute("aria-label", aria);
-  return new maplibregl.Marker({ element: el }).setLngLat([coord.lng, coord.lat]).addTo(map);
+  return new maplibregl.Marker({ element: el, offset: PIN_OFFSET[kind] })
+    .setLngLat([coord.lng, coord.lat])
+    .addTo(map);
 }
