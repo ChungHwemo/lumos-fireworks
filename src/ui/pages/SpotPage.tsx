@@ -8,6 +8,8 @@ import {
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
+import { CONTROL_COPY, spotNameEn } from "../content.ts";
+import { NamePair, festivalTitle, spotField } from "../display.tsx";
 import { useLang } from "../Lang.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
 import { appleDir, googleDir } from "../share.ts";
@@ -16,7 +18,7 @@ import { ReportForm, reportKindLabel } from "./ReportForm.tsx";
 
 export function SpotPage() {
   const { festivalId = "", spotId = "" } = useParams();
-  const { t } = useLang();
+  const { lang, t } = useLang();
   const navigate = useNavigate();
   const festival = festivalById(festivalId);
   const spots = useMemo(() => decoratedSpots(festivalId), [festivalId]);
@@ -51,17 +53,29 @@ export function SpotPage() {
         showSpots
         showCrowd
         layer="pale"
+        labels={{
+          launch: t.pinLaunch,
+          share: t.pinShare,
+          mapAria: t.mapAria,
+          launchAria: t.launch,
+          shareAria: t.share,
+          spotName: (row) =>
+            lang === "ja" ? row.nameJa : lang === "en" ? spotNameEn(row.id, row.nameJa) : row.nameKo,
+        }}
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
       />
       <article className="sheet">
         <Link className="back" to={`/e/${festival.id}?tab=spots`}>
-          ← {festival.nameKo}
+          ← {festivalTitle(festival, lang).primary}
         </Link>
         <h1>
-          {spot.nameKo} <span lang="ja">{spot.nameJa}</span>
+          <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotNameEn(spot.id, spot.nameJa)} lang={lang} />
         </h1>
-        <p className="disclaimer">{festival.disclaimerKo}</p>
-        <ShareButton title={spot.nameKo} />
+        <p className="disclaimer">
+          {t.unofficial}
+          {festival.launch ? ` ${t.launchEstimate}` : ""}
+        </p>
+        <ShareButton title={lang === "ja" ? spot.nameJa : lang === "en" ? spotNameEn(spot.id, spot.nameJa) : spot.nameKo} />
         <p className="meta">
           {spot.distanceMeters != null && (
             <>
@@ -81,47 +95,52 @@ export function SpotPage() {
           {spot.badge === "paid" && ` · ${t.badgePaid}`}
           {spot.badge === "vehicle" && ` · ${t.badgeVehicle}`}
         </p>
-        <p>{spot.descriptionKo}</p>
+        <p>{spotField(spot, "description", spot.descriptionKo, lang)}</p>
         <dl className="cells">
           <div>
             <dt>{t.viewing}</dt>
-            <dd>{spot.viewingKo}</dd>
+            <dd>{spotField(spot, "viewing", spot.viewingKo, lang)}</dd>
           </div>
           <div>
             <dt>{t.crowd}</dt>
             <dd>
-              {spot.crowdKo}
+              {spotField(spot, "crowd", spot.crowdKo, lang)}
               <br />
               <span className="meta">{t.notLiveCrowd}</span>
             </dd>
           </div>
           <div>
             <dt>{t.restroom}</dt>
-            <dd>{spot.restroomKo}</dd>
+            <dd>{spotField(spot, "restroom", spot.restroomKo, lang)}</dd>
           </div>
           <div>
             <dt>{t.food}</dt>
-            <dd>{spot.foodKo}</dd>
+            <dd>{spotField(spot, "food", spot.foodKo, lang)}</dd>
           </div>
           <div>
             <dt>{t.transit}</dt>
-            <dd>{spot.transitKo}</dd>
+            <dd>{spotField(spot, "transit", spot.transitKo, lang)}</dd>
           </div>
           <div>
             <dt>{t.access}</dt>
             <dd>
-              {spot.accessNoticeKo}
-              {hitting.map((control) => (
+              {spotField(spot, "access", spot.accessNoticeKo, lang)}
+              {hitting.map((control) => {
+                const copy = CONTROL_COPY[control.id];
+                return (
                 <p key={control.id}>
-                  <strong>{control.titleKo}</strong> ({control.scheduleKo})
+                  <strong>{copy?.title[lang] ?? control.titleKo}</strong> ({copy?.schedule[lang] ?? control.scheduleKo})
                   <br />
-                  {control.detailKo}
+                  {copy?.detail[lang] ?? control.detailKo}
                 </p>
-              ))}
+                );
+              })}
             </dd>
           </div>
         </dl>
-        {spot.visibilityNoteKo && <p className="note">{spot.visibilityNoteKo}</p>}
+        {spot.visibilityNoteKo && (
+          <p className="note">{spotField(spot, "visibility", spot.visibilityNoteKo, lang)}</p>
+        )}
         {links.map((link) => (
           <p key={link.id} className="note">
             <a href={link.url} rel="noreferrer" target="_blank">

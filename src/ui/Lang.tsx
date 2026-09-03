@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { messages, type Lang } from "./i18n.ts";
 
 const KEY = "hanabi-lang";
@@ -15,7 +15,11 @@ const LangContext = createContext<Ctx | null>(null);
 
 function readLang(): Lang {
   const stored = localStorage.getItem(KEY);
-  return stored === "en" ? "en" : "ko";
+  if (stored === "en" || stored === "ja" || stored === "ko") return stored;
+  const nav = navigator.language.toLowerCase();
+  if (nav.startsWith("ja")) return "ja";
+  if (nav.startsWith("en")) return "en";
+  return "ko";
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {
@@ -24,6 +28,9 @@ export function LangProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(KEY, next);
     setLangState(next);
   };
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   const value = useMemo(
     () => ({ lang, setLang, t: messages[lang] }),
     [lang],

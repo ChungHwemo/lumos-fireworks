@@ -25,6 +25,14 @@ type Props = {
   layer: GsiLayer;
   onSelect: (spotId: string) => void;
   onMapClick?: (coord: Coord) => void;
+  labels?: {
+    launch: string;
+    share: string;
+    mapAria: string;
+    launchAria: string;
+    shareAria: string;
+    spotName: (spot: DecoratedSpot) => string;
+  };
 };
 
 export function FestivalMap({
@@ -40,6 +48,7 @@ export function FestivalMap({
   layer,
   onSelect,
   onMapClick,
+  labels,
 }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -57,6 +66,7 @@ export function FestivalMap({
     layer,
     onSelect,
     onMapClick,
+    labels,
   });
   state.current = {
     launch,
@@ -71,6 +81,7 @@ export function FestivalMap({
     layer,
     onSelect,
     onMapClick,
+    labels,
   };
 
   useEffect(() => {
@@ -84,14 +95,14 @@ export function FestivalMap({
       attributionControl: false,
       maxPitch: 0,
     });
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-left");
     map.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: false,
       }),
-      "top-right",
+      "top-left",
     );
     mapRef.current = map;
 
@@ -133,9 +144,9 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd]);
+  }, [launch, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, labels]);
 
-  return <div ref={root} className="map" role="application" aria-label="행사 지도" />;
+  return <div ref={root} className="map" role="application" aria-label={labels?.mapAria ?? "행사 지도"} />;
 }
 
 function dropLayer(map: maplibregl.Map, id: string) {
@@ -234,11 +245,27 @@ function drawOverlays(
   }
 
   if (props.launch) {
-    markers.current.push(pin(map, props.launch, "pin pin-launch", "발", "발사 앵커"));
+    markers.current.push(
+      pin(
+        map,
+        props.launch,
+        "pin pin-launch",
+        props.labels?.launch ?? "발",
+        props.labels?.launchAria ?? "발사 앵커",
+      ),
+    );
   }
 
   if (props.sharePin) {
-    markers.current.push(pin(map, props.sharePin, "pin pin-share", "공", "공유 좌표"));
+    markers.current.push(
+      pin(
+        map,
+        props.sharePin,
+        "pin pin-share",
+        props.labels?.share ?? "공",
+        props.labels?.shareAria ?? "공유 좌표",
+      ),
+    );
   }
 
   if (props.showSpots) {
@@ -247,7 +274,7 @@ function drawOverlays(
       el.type = "button";
       el.className = `pin pin-${spot.badge ?? "open"}${spot.id === props.selectedId ? " is-on" : ""}`;
       el.textContent = String(index + 1);
-      el.setAttribute("aria-label", spot.nameKo);
+      el.setAttribute("aria-label", props.labels?.spotName(spot) ?? spot.nameKo);
       el.addEventListener("click", (event) => {
         event.stopPropagation();
         props.onSelect(spot.id);

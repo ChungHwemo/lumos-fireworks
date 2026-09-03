@@ -2,8 +2,10 @@ import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals, festivals } from "../../data/catalog.ts";
 import { parseFromQuery } from "../../domain/query.ts";
+import { NamePair, festivalStation, festivalTitle } from "../display.tsx";
 import { weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
+import { LangSwitch } from "../LangSwitch.tsx";
 
 function rainKey(policy: string) {
   return {
@@ -39,6 +41,7 @@ export function CatalogPage() {
         <p className="kicker">Asia/Tokyo · from {from}</p>
         <h1>{t.appTitle}</h1>
         <p className="lede">{t.appBlurb}</p>
+        <LangSwitch />
       </header>
       <p className="disclaimer">{t.unofficial}</p>
       <div className="filters" role="group" aria-label={t.catalog}>
@@ -94,8 +97,12 @@ export function CatalogPage() {
                 {weekday(festival.date, lang)})
               </time>
               <strong>
-                {festival.nameKo}{" "}
-                <span lang="ja">{festival.nameJa}</span>
+                <NamePair
+                  ko={festival.nameKo}
+                  ja={festival.nameJa}
+                  en={festivalTitle(festival, lang).en}
+                  lang={lang}
+                />
               </strong>
               <p>
                 {festival.prefecture} {festival.city} · {festival.startTime}–
@@ -104,7 +111,9 @@ export function CatalogPage() {
               <p className="meta">
                 {t[rainKey(festival.rainPolicy)]}
                 {festival.paidSeats ? ` · ${t.paidSeats}` : ""}
-                {festival.nearestStationKo ? ` · ${festival.nearestStationKo}` : ""}
+                {festival.nearestStationKo
+                  ? ` · ${festivalStation(festival, lang)}`
+                  : ""}
               </p>
             </Link>
           </li>

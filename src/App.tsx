@@ -10,6 +10,11 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
 export function App() {
   return (
     <LangProvider>
+      <div className="aurora" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
       <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/" element={<CatalogPage />} />

@@ -11,8 +11,17 @@ import { loadReports } from "../../data/reports.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { filterSpotsByText } from "../../domain/spot.ts";
-import { weekday } from "../i18n.ts";
+import { SEAT_COPY, spotNameEn } from "../content.ts";
+import {
+  NamePair,
+  festivalRainNote,
+  festivalStation,
+  festivalTitle,
+  festivalVenue,
+} from "../display.tsx";
+import { localeTag, weekday } from "../i18n.ts";
 import { useLang } from "../Lang.tsx";
+import { LangSwitch } from "../LangSwitch.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
 import type { GsiLayer } from "../map/gsi-style.ts";
 import { parseShareCoord } from "../share.ts";
@@ -23,8 +32,9 @@ export function FestivalPage() {
   const { festivalId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { lang, t, setLang } = useLang();
+  const { lang, t } = useLang();
   const festival = festivalById(festivalId);
+  const title = festival ? festivalTitle(festival, lang) : null;
   const tab = params.get("tab") ?? "event";
   const layer = (params.get("map") === "std" ? "std" : "pale") as GsiLayer;
   const showControls = params.get("ctl") !== "0";
@@ -69,6 +79,15 @@ export function FestivalPage() {
         showCrowd={showCrowd && tab !== "settings"}
         layer={layer}
         onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
+        labels={{
+          launch: t.pinLaunch,
+          share: t.pinShare,
+          mapAria: t.mapAria,
+          launchAria: t.launch,
+          shareAria: t.share,
+          spotName: (spot) =>
+            lang === "ja" ? spot.nameJa : lang === "en" ? spotNameEn(spot.id, spot.nameJa) : spot.nameKo,
+        }}
         onMapClick={(coord) => {
           params.set("lng", coord.lng.toFixed(5));
           params.set("lat", coord.lat.toFixed(5));
@@ -83,12 +102,15 @@ export function FestivalPage() {
           {festival.date}
           {festival.dateEnd ? `–${festival.dateEnd}` : ""} (
           {weekday(festival.date, lang)}) · {festival.startTime}–{festival.endTime}
-          {isFestivalDay(festival, new Date()) ? " · TODAY" : ""}
+          {isFestivalDay(festival, new Date()) ? ` · ${t.today}` : ""}
         </p>
         <h1>
-          {festival.nameKo} <span lang="ja">{festival.nameJa}</span>
+          <NamePair ko={festival.nameKo} ja={festival.nameJa} en={title?.en} lang={lang} />
         </h1>
-        <p className="disclaimer">{festival.disclaimerKo}</p>
+        <p className="disclaimer">
+          {t.unofficial}
+          {festival.launch ? ` ${t.launchEstimate}` : ""}
+        </p>
         <nav className="tabs" aria-label="sections">
           <Tab current={tab} id="event" onClick={setTab}>
             {t.tabEvent}
@@ -106,28 +128,35 @@ export function FestivalPage() {
 
         {tab === "event" && (
           <div className="stack">
-            <ShareButton title={festival.nameKo} />
+            <ShareButton title={title?.primary ?? festival.nameKo} />
             <p>
-              <strong>{t.venue}</strong> {festival.venueKo}{" "}
-              <span lang="ja">{festival.venueJa}</span>
+              <strong>{t.venue}</strong>{" "}
+              <NamePair
+                ko={festival.venueKo}
+                ja={festival.venueJa}
+                en={festivalVenue(festival, lang).en}
+                lang={lang}
+              />
             </p>
             <p>
-              <strong>{t.station}</strong> {festival.nearestStationKo}
+              <strong>{t.station}</strong> {festivalStation(festival, lang)}
             </p>
             <p>
-              <strong>{t[rainKey(festival.rainPolicy)]}</strong> — {festival.rainNoteKo}
+              <strong>{t[rainKey(festival.rainPolicy)]}</strong> — {festivalRainNote(festival, lang)}
             </p>
             {festival.shellsApprox != null && (
               <p>
-                <strong>{t.shells}</strong> {festival.shellsApprox.toLocaleString(lang)}
+                <strong>{t.shells}</strong> {festival.shellsApprox.toLocaleString(localeTag[lang])}
               </p>
             )}
-            {seats.map((seat) => (
+            {seats.map((seat) => {
+              const copy = SEAT_COPY[festival.id];
+              return (
               <p key={seat.zoneKo}>
-                <strong>{t.paidSeats}</strong> {seat.zoneKo}
-                {seat.priceJpy != null ? ` · ¥${seat.priceJpy.toLocaleString()}` : ""}
+                <strong>{t.paidSeats}</strong> {copy?.zone[lang] ?? seat.zoneKo}
+                {seat.priceJpy != null ? ` · ¥${seat.priceJpy.toLocaleString(localeTag[lang])}` : ""}
                 <br />
-                {seat.noteKo}
+                {copy?.note[lang] ?? seat.noteKo}
                 {seat.ticketUrl && (
                   <>
                     {" "}
@@ -137,7 +166,8 @@ export function FestivalPage() {
                   </>
                 )}
               </p>
-            ))}
+              );
+            })}
             <p>
               <a href={festival.officialUrl} rel="noreferrer" target="_blank">
                 {t.official}
@@ -163,7 +193,7 @@ export function FestivalPage() {
                 {spots.slice(0, 4).map((spot) => (
                   <li key={spot.id}>
                     <Link to={`/e/${festival.id}/p/${spot.id}`}>
-                      <SpotLine spot={spot} t={t} />
+                      <SpotLine spot={spot} t={t} lang={lang} />
                     </Link>
                   </li>
                 ))}
@@ -174,7 +204,7 @@ export function FestivalPage() {
 
         {tab === "spots" && (
           <div className="stack">
-            <ShareButton title={festival.nameKo} />
+            <ShareButton title={title?.primary ?? festival.nameKo} />
             <label>
               {t.searchSpots}
               <input
@@ -216,7 +246,7 @@ export function FestivalPage() {
                 {visibleSpots.map((spot) => (
                   <li key={spot.id}>
                     <Link to={`/e/${festival.id}/p/${spot.id}`}>
-                      <SpotLine spot={spot} t={t} />
+                      <SpotLine spot={spot} t={t} lang={lang} />
                     </Link>
                   </li>
                 ))}
@@ -253,16 +283,7 @@ export function FestivalPage() {
 
         {tab === "settings" && (
           <div className="stack">
-            <p>
-              <strong>{t.lang}</strong>
-              <br />
-              <button type="button" onClick={() => setLang("ko")} aria-pressed={lang === "ko"}>
-                한국어
-              </button>{" "}
-              <button type="button" onClick={() => setLang("en")} aria-pressed={lang === "en"}>
-                English
-              </button>
-            </p>
+            <LangSwitch />
             <p>{t.no3d}</p>
             <p>
               <strong>{t.overlaySpots}</strong>
@@ -294,7 +315,7 @@ export function FestivalPage() {
                 地理院タイル
               </a>
             </p>
-            <ShareButton title={festival.nameKo} />
+            <ShareButton title={title?.primary ?? festival.nameKo} />
           </div>
         )}
       </section>
@@ -337,9 +358,11 @@ function rainKey(policy: string) {
 function SpotLine({
   spot,
   t,
+  lang,
 }: {
   spot: ReturnType<typeof decoratedSpots>[number];
   t: ReturnType<typeof useLang>["t"];
+  lang: ReturnType<typeof useLang>["lang"];
 }) {
   const label =
     spot.badge === "blocked"
@@ -352,7 +375,7 @@ function SpotLine({
   return (
     <>
       <strong>
-        {spot.nameKo} <span lang="ja">{spot.nameJa}</span>
+        <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotNameEn(spot.id, spot.nameJa)} lang={lang} />
       </strong>
       <span className="meta">
         {spot.distanceMeters != null ? `${spot.distanceMeters}${t.meters}` : "—"}
