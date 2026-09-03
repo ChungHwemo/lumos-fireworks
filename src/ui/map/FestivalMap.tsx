@@ -104,9 +104,12 @@ export function FestivalMap({
       container: root.current,
       style: gsiStyle(layer),
       center: [center.lng, center.lat],
-      zoom: area?.zoom ?? (launch ? 14 : 5),
+      zoom: area?.zoom ?? (launch ? 15 : 5),
+      pitch: launch || area ? 83 : 0,
+      bearing: 0,
+      canvasContextAttributes: { antialias: true },
       attributionControl: false,
-      maxPitch: 0,
+      maxPitch: 85,
     });
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-left");
@@ -119,24 +122,53 @@ export function FestivalMap({
     );
     mapRef.current = map;
 
+    const host = root.current;
     const redraw = () => drawOverlays(map, markers, state.current);
-    map.on("load", () => {
-      map.resize();
-      fitView(map, viewPoints(state.current));
+    let firstStyle = true;
+    map.on("style.load", () => {
+      if (firstStyle) {
+        firstStyle = false;
+        map.resize();
+        fitView(map, viewPoints(state.current));
+      }
       redraw();
+      if (orbiting) orbitStep();
     });
-    map.on("style.load", redraw);
     map.on("click", (event) => {
       state.current.onMapClick?.({ lng: event.lngLat.lng, lat: event.lngLat.lat });
     });
 
+    // 진입 오비트. 발사점을 중심으로 90°를 40초에 돈다. 사용자가 만지면 멈추고 다시 돌지 않는다.
+    let orbiting = launch != null || area != null;
+    let orbitTimer = 0;
+    const orbitStep = () => {
+      if (!orbiting) return;
+      map.easeTo({
+        bearing: map.getBearing() + 90,
+        duration: 40000,
+        easing: (t) => t,
+        essential: false,
+      });
+      orbitTimer = window.setTimeout(orbitStep, 40000);
+    };
+    const stopOrbit = () => {
+      if (!orbiting) return;
+      orbiting = false;
+      window.clearTimeout(orbitTimer);
+      map.stop();
+    };
+    // 캡처 단계라 마커의 stopPropagation 을 타지 않는다. 캔버스 드래그·핀 탭·컨트롤 클릭을 전부 받는다.
+    host.addEventListener("pointerdown", stopOrbit, { capture: true });
+
     const ro = new ResizeObserver(() => map.resize());
-    ro.observe(root.current);
+    ro.observe(host);
 
     return () => {
       ro.disconnect();
       for (const marker of markers.current) marker.remove();
       markers.current = [];
+      window.clearTimeout(orbitTimer);
+      host.removeEventListener("pointerdown", stopOrbit, { capture: true });
       map.remove();
       mapRef.current = null;
     };
