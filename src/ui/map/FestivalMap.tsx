@@ -235,7 +235,7 @@ export function FestivalMap({
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     drawOverlays(map, markers, state.current);
-  }, [launch, area, station, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, fireworks, fireworksSeed, labels]);
+  }, [launch, area, station, spots, controls, selectedId, sharePin, heat, showControls, showSpots, showCrowd, labels]);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -418,15 +418,6 @@ function fitView(map: maplibregl.Map, points: Coord[]) {
   );
 }
 
-// 熱海처럼 발사점·역·명당이 한 곳에 몰리면 라벨 칩이 번호 핀을 덮는다.
-// 종류마다 세로로 어긋나게 띄운다. 20px 안쪽이라 지도 축척에서는 무시할 만하다.
-const PIN_OFFSET: Record<PinKind, [number, number]> = {
-  launch: [0, -20],
-  launchUnknown: [0, -20],
-  station: [0, 20],
-  share: [0, 40],
-};
-
 function pin(
   map: maplibregl.Map,
   coord: Coord,
@@ -444,7 +435,5 @@ function pin(
   text.textContent = label;
   el.appendChild(text);
   el.setAttribute("aria-label", aria);
-  return new maplibregl.Marker({ element: el, offset: PIN_OFFSET[kind] })
-    .setLngLat([coord.lng, coord.lat])
-    .addTo(map);
+  return new maplibregl.Marker({ element: el }).setLngLat([coord.lng, coord.lat]).addTo(map);
 }

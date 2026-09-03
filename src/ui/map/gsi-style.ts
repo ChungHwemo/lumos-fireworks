@@ -5,7 +5,7 @@ export type GsiLayer = "pale" | "std";
 const TERRAIN_SOURCE_ID = "terrain";
 
 const GSI_ATTRIBUTION =
-  '<a href="https://maps.gsi.go.jp/development/ichiran.html" rel="noreferrer">地理院タイル</a>';
+  '<a href="https://maps.gsi.go.jp/development/ichiran.html" rel="noreferrer">地理院タイル</a> · pictograms <a href="https://github.com/google/material-design-icons" rel="noreferrer">Material Symbols</a> (Apache-2.0)';
 
 // 국토지리원 DEM은 못 쓴다. 무효 화소 RGB(128,0,0)이 83,886m 벽이 된다.
 // 자세한 근거는 docs/prd/2026-09-03-map-3d-fireworks.md D2.

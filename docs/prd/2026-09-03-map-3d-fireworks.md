@@ -92,7 +92,8 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 
 프로토타입에서 맞춰 본 값이다. 그대로 쓴다.
 
-- `maxPitch: 0` → `85`. 진입 pitch 83°, zoom 15.0. 하늘이 화면 위 절반을 차지해야 불꽃이 산다.
+- `maxPitch: 0` → `85`. 진입 pitch 78°, zoom 15.0. 하늘이 화면 위 절반을 차지해야 불꽃이 산다.
+  pitch 83 은 熱海 같은 해안 지형에서 카메라가 언덕 안에 들어가 불꽃이 능선 뒤로 숨었다.
 - 지도 생성 시 `canvasContextAttributes: { antialias: true }`.
 - 지형은 D2의 AWS Terrain Tiles(`encoding: "terrarium"`), `exaggeration: 1.3`.
 - 밤은 타일을 새로 받지 않고 래스터 paint로 만든다. 地理院タイル 원본 그대로다.

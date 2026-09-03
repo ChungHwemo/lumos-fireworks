@@ -293,7 +293,7 @@ dd { margin: 0; }
 
 .legend {
   position: absolute;
-  left: 0.5rem;
+  left: 3.75rem;
   top: 0.5rem;
   z-index: 3;
   max-width: min(15rem, calc(100vw - 1rem));

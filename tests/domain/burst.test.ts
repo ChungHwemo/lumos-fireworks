@@ -69,6 +69,8 @@ test("같은 시드는 같은 좌표를 준다", () => {
   const a = unknownLaunchOffset(center, "atami-kaijo-2026-09-13");
   const b = unknownLaunchOffset(center, "atami-kaijo-2026-09-13");
   expect(a).toEqual(b);
+  expect(a.lng).toBeCloseTo(139.0749153554045, 6);
+  expect(a.lat).toBeCloseTo(35.09644403004916, 6);
 });
 
 test("다른 행사는 다른 좌표를 쓰고 400m 안에 있다", () => {
