@@ -25,16 +25,16 @@ export function MapLegend() {
           <Glyph kind="share" /> {t.pinShare}
         </li>
         <li>
-          <span className="pin pin-open legend-chip">1</span> {t.legendSpotOpen}
+          <span className="pin pin-open pin-static">1</span> {t.legendSpotOpen}
         </li>
         <li>
-          <span className="pin pin-paid legend-chip">1</span> {t.legendSpotPaid}
+          <span className="pin pin-paid pin-static">1</span> {t.legendSpotPaid}
         </li>
         <li>
-          <span className="pin pin-blocked legend-chip">1</span> {t.legendSpotBlocked}
+          <span className="pin pin-blocked pin-static">1</span> {t.legendSpotBlocked}
         </li>
         <li>
-          <span className="pin pin-vehicle legend-chip">1</span> {t.legendSpotVehicle}
+          <span className="pin pin-vehicle pin-static">1</span> {t.legendSpotVehicle}
         </li>
       </ul>
       <p className="note">{t.legendSpotNumber}</p>
