@@ -3,11 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0710" />
     <title>일본 불꽃놀이 지도</title>
     <meta
       name="description"
       content="2026년 9월 4일 이후 일본 花火大会 비공식 지도. 거리와 통제를 함께 봅니다."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="일본 불꽃놀이 지도" />
+    <meta
+      property="og:description"
+      content="2026년 9월 4일 이후 일본 花火大会 비공식 지도. 거리와 통제를 함께 봅니다."
+    />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -960 960 960'%3E%3Crect width='960' height='960' y='-960' rx='160' fill='%230a0710'/%3E%3Cpath fill='%23ff6a3d' d='M450-820h60v170h-60v-170Zm0 500h60v170h-60v-170Zm370-190v60H650v-60h170Zm-500 0v60H150v-60h170Zm372-282 42 42-120 120-42-42 120-120ZM268-310l42 42-120 120-42-42 120-120Zm424 302-120-120 42-42 120 120-42 42ZM190-732l120 120-42 42-120-120 42-42ZM480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560Z'/%3E%3C/svg%3E"
+    />
+    <!-- 타일·지형 서버는 첫 지도 화면에서 바로 두드린다. 핸드셰이크를 먼저 끝내 둔다. -->
+    <link rel="preconnect" href="https://cyberjapandata.gsi.go.jp" crossorigin />
+    <link rel="preconnect" href="https://s3.amazonaws.com" crossorigin />
     <script>
       // GitHub Pages 사용자 사이트는 루트 404.html만 쓴다. 거기가 넘겨준 원래 경로를 되돌린다.
       (function () {
@@ -26,6 +45,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p style="padding: 1rem; font-family: sans-serif">
+        이 지도는 JavaScript가 필요합니다. This map needs JavaScript. この地図にはJavaScriptが必要です。
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
