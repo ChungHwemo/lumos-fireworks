@@ -13,4 +13,8 @@
 - **control** — 발사 반경·차량·보행·역·유료 게이트. 직선으로 가까워도 보행/반경에 걸리면 명당이 아니다.
 - **reachable** — 그 자리에 서서 볼 수 있는가. 차량 규제만으로는 false가 되지 않는다.
 
-공개 함수 이름은 TDD 문서의 시임을 따른다. `listFestivals`, `listFestivalDates`, `isFestivalDay`, `distanceMetersToLaunch`, `sortSpots`, `assertCatalogIntegrity`.
+공개 함수 이름은 TDD 문서의 시임을 따른다. `listFestivals`, `listFestivalDates`, `isFestivalDay`, `distanceMetersToLaunch`, `sortSpots`, `assertCatalogIntegrity`(`catalogIssues`).
+
+- **basemap** — `night`(国土地理院 최적화 벡터타일 재색) · `photo`(空中写真 어둡게) · `pale`(淡色地図). URL `?map=`. 없으면 night.
+- **shell** — 불꽃 한 발. `kind` 牡丹·菊·柳·輪·銀冠·椰子. 궤적·입자 방향·간격은 `src/domain/burst.ts` 순수 함수. 연출이며 데이터가 아니다.
+- **sheet** — 지도 위 정보 패널. 모바일은 바텀시트, 880px 부터 오른쪽 패널.

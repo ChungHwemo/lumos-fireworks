@@ -109,6 +109,9 @@ Material Symbols는 Apache-2.0이고 SVG 원본을 준다. 출처는 README와 �
 - 셸이 올라가고, 폭발하고, 떨어진다. 동시 최대 6셸, 셸당 340 입자.
 - **셸은 지상 100m(`BASE_Y`)에서 뜬다.** 폭발 정점은 지상 720–1100m다. 熱海 능선이 400–500m라
   버스트가 산에 걸리지 않는다. 대신 지상에서 올라오는 발사 불빛은 없다. 의도한 맞바꿈이다.
+  > 2026-09-23 개정: 입자를 `depthTest: false` 로 그려 능선에 가려지지 않게 했다. 맞바꿈이 필요 없어져
+  > `BASE_Y` 는 0 이고 발사 불빛이 땅에서 올라온다. 동시 8셸, 셸당 최대 420 입자, 여섯 종류.
+  > 자세한 것은 [2026-09-03-remaining.md](./2026-09-03-remaining.md) 의 2026-09-23 사이클.
 - `THREE.Points` + `AdditiveBlending`, `depthWrite: false`, **`sizeAttenuation: false`**.
   MapLibre가 넘겨주는 투영 행렬 아래서 `sizeAttenuation: true`는 크기를 못 믿는다. 픽셀 크기로 고정한다.
 - 스프라이트는 캔버스 radial gradient로 런타임 생성한다. 파일 없음.
