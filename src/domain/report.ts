@@ -1,10 +1,13 @@
-export type ReportKind =
-  | "crowd"
-  | "restroom"
-  | "food"
-  | "traffic"
-  | "firework"
-  | "other";
+export const REPORT_KINDS = [
+  "crowd",
+  "restroom",
+  "food",
+  "traffic",
+  "firework",
+  "other",
+] as const;
+
+export type ReportKind = (typeof REPORT_KINDS)[number];
 
 export type ReportDraft = {
   festivalId: string;
