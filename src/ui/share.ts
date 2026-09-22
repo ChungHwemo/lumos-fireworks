@@ -1,8 +1,13 @@
 export function parseShareCoord(
   search: URLSearchParams,
 ): { lng: number; lat: number } | null {
-  const lngRaw = search.get("lng");
-  const latRaw = search.get("lat");
+  return parseCoordPair(search.get("lng"), search.get("lat"));
+}
+
+export function parseCoordPair(
+  lngRaw: string | null,
+  latRaw: string | null,
+): { lng: number; lat: number } | null {
   if (lngRaw == null || latRaw == null || lngRaw === "" || latRaw === "") return null;
   const lng = Number(lngRaw);
   const lat = Number(latRaw);
@@ -11,13 +16,28 @@ export function parseShareCoord(
   return { lng, lat };
 }
 
-export async function shareUrl(title: string, text: string, url: string): Promise<"shared" | "copied"> {
-  if (navigator.share) {
-    await navigator.share({ title, text, url });
-    return "shared";
+export type ShareResult = "shared" | "copied" | "cancelled" | "failed";
+
+/**
+ * Web Share 가 있으면 시트를 띄우고, 없으면 클립보드에 복사한다.
+ * 사용자가 시트를 닫으면 cancelled, 둘 다 막혀 있으면 failed. 던지지 않는다.
+ */
+export async function shareUrl(title: string, text: string, url: string): Promise<ShareResult> {
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({ title, text, url });
+      return "shared";
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return "cancelled";
+      // 공유 시트가 거부되면 클립보드로 내려간다.
+    }
   }
-  await navigator.clipboard.writeText(url);
-  return "copied";
+  try {
+    await navigator.clipboard.writeText(url);
+    return "copied";
+  } catch {
+    return "failed";
+  }
 }
 
 export function googleDir(lat: number, lng: number): string {

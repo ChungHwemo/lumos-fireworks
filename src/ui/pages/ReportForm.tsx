@@ -1,16 +1,8 @@
-import { useState } from "react";
-import { persistReport } from "../../data/reports.ts";
-import type { Report, ReportKind } from "../../domain/report.ts";
+import { useId, useState } from "react";
+import { persistReport, ReportStorageError } from "../../data/reports.ts";
+import { REPORT_KINDS, type Report, type ReportKind } from "../../domain/report.ts";
+import { reportKindLabel } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
-
-const KINDS: ReportKind[] = [
-  "crowd",
-  "restroom",
-  "food",
-  "traffic",
-  "firework",
-  "other",
-];
 
 export function ReportForm({
   festivalId,
@@ -29,21 +21,18 @@ export function ReportForm({
   const [kind, setKind] = useState<ReportKind>("crowd");
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
-
-  const kindLabel: Record<ReportKind, string> = {
-    crowd: t.reportKindCrowd,
-    restroom: t.reportKindRestroom,
-    food: t.reportKindFood,
-    traffic: t.reportKindTraffic,
-    firework: t.reportKindFirework,
-    other: t.reportKindOther,
-  };
+  const errorId = useId();
 
   return (
     <form
       className="report-form"
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
+        if (!body.trim()) {
+          setError(t.reportBodyRequired);
+          return;
+        }
         try {
           const list = persistReport({
             festivalId,
@@ -57,8 +46,8 @@ export function ReportForm({
           setBody("");
           setError("");
           onSaved(list);
-        } catch {
-          setError(t.reportBody);
+        } catch (cause) {
+          setError(cause instanceof ReportStorageError ? t.reportSaveFailed : t.reportBodyRequired);
         }
       }}
     >
@@ -68,9 +57,9 @@ export function ReportForm({
           value={kind}
           onChange={(event) => setKind(event.target.value as ReportKind)}
         >
-          {KINDS.map((row) => (
+          {REPORT_KINDS.map((row) => (
             <option key={row} value={row}>
-              {kindLabel[row]}
+              {reportKindLabel(row, t)}
             </option>
           ))}
         </select>
@@ -80,28 +69,24 @@ export function ReportForm({
         <textarea
           value={body}
           rows={3}
-          onChange={(event) => setBody(event.target.value)}
+          maxLength={500}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          onChange={(event) => {
+            setBody(event.target.value);
+            if (error) setError("");
+          }}
         />
       </label>
       <button type="submit" className="primary">
         {t.reportSubmit}
       </button>
       <p className="note">{t.reportLocal}</p>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" className="form-error">
+          {error}
+        </p>
+      )}
     </form>
   );
-}
-
-export function reportKindLabel(
-  kind: ReportKind,
-  t: ReturnType<typeof useLang>["t"],
-): string {
-  return {
-    crowd: t.reportKindCrowd,
-    restroom: t.reportKindRestroom,
-    food: t.reportKindFood,
-    traffic: t.reportKindTraffic,
-    firework: t.reportKindFirework,
-    other: t.reportKindOther,
-  }[kind];
 }

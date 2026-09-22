@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   controlsFor,
@@ -6,14 +6,17 @@ import {
   festivalById,
   seatsFor,
   seriesDates,
+  type DecoratedSpot,
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
-import { areaLabel, festivalArea } from "../../domain/area.ts";
+import { areaLabel, festivalArea, festivalPlace } from "../../domain/area.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
-import { festivalStationPoint } from "../../domain/station.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { filterSpotsByText } from "../../domain/spot.ts";
-import { SEAT_COPY, spotNameEn } from "../content.ts";
+import { festivalStationPoint } from "../../domain/station.ts";
+import type { Coord } from "../../domain/types.ts";
+import { festivalIcs, icsDataUrl } from "../calendar.ts";
+import { SEAT_COPY } from "../content.ts";
 import {
   NamePair,
   festivalRainNote,
@@ -21,29 +24,48 @@ import {
   festivalTitle,
   festivalVenue,
 } from "../display.tsx";
-import { localeTag, weekday } from "../i18n.ts";
+import { localeTag, weekday, type Dict, type Lang } from "../i18n.ts";
+import { Icon } from "../Icon.tsx";
+import { badgeLabel, dateRange, rainLabel, reportKindLabel, spotName } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
 import { LangSwitch } from "../LangSwitch.tsx";
 import { FestivalMap } from "../map/FestivalMap.tsx";
+import { parseMapStyle, type MapStyleId } from "../map/gsi-style.ts";
+import { MapChips } from "../map/MapChips.tsx";
 import { MapLegend } from "../map/MapLegend.tsx";
-import type { GsiLayer } from "../map/gsi-style.ts";
-import { parseShareCoord } from "../share.ts";
+import { flag, useUpdateParams } from "../searchParams.ts";
+import { parseCoordPair } from "../share.ts";
 import { ShareButton } from "../ShareButton.tsx";
-import { ReportForm, reportKindLabel } from "./ReportForm.tsx";
+import { Sheet } from "../Sheet.tsx";
+import { useDocumentTitle } from "../useDocumentTitle.ts";
+import { ReportForm } from "./ReportForm.tsx";
+
+const TABS = ["event", "spots", "reports", "settings"] as const;
+type TabId = (typeof TABS)[number];
+
+function parseTab(raw: string | null): TabId {
+  return (TABS as readonly string[]).includes(raw ?? "") ? (raw as TabId) : "event";
+}
 
 export function FestivalPage() {
   const { festivalId = "" } = useParams();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const update = useUpdateParams();
   const navigate = useNavigate();
   const { lang, t } = useLang();
   const festival = festivalById(festivalId);
   const title = festival ? festivalTitle(festival, lang) : null;
-  const tab = params.get("tab") ?? "event";
-  const layer = (params.get("map") === "std" ? "std" : "pale") as GsiLayer;
-  const showControls = params.get("ctl") !== "0";
-  const showCrowd = params.get("crowd") !== "0";
-  const showFireworks = params.get("fw") !== "0";
-  const sharePin = parseShareCoord(params);
+  useDocumentTitle(title?.primary);
+
+  const tab = parseTab(params.get("tab"));
+  const mapStyleId = parseMapStyle(params.get("map"));
+  const showControls = flag(params, "ctl", true);
+  const showCrowd = flag(params, "crowd", true);
+  const showFireworks = flag(params, "fw", true);
+  // 문자열 두 개를 키로 메모한다. params 객체는 렌더마다 새로워 지도가 매번 다시 그려진다.
+  const lngRaw = params.get("lng");
+  const latRaw = params.get("lat");
+  const sharePin = useMemo(() => parseCoordPair(lngRaw, latRaw), [lngRaw, latRaw]);
   const [q, setQ] = useState("");
   const [reports, setReports] = useState(loadReports);
 
@@ -51,27 +73,55 @@ export function FestivalPage() {
   const visibleSpots = useMemo(() => filterSpotsByText(spots, q), [spots, q]);
   const controls = useMemo(() => controlsFor(festivalId), [festivalId]);
   const seats = useMemo(() => seatsFor(festivalId), [festivalId]);
-  const dates = festival ? seriesDates(festival.seriesId) : [];
+  const dates = useMemo(() => (festival ? seriesDates(festival.seriesId) : []), [festival]);
   const festivalReports = useMemo(
     () => listReports(reports, { festivalId }),
     [reports, festivalId],
   );
-  const heat = useMemo(
-    () => crowdHeat(spots, festivalReports),
-    [spots, festivalReports],
+  const heat = useMemo(() => crowdHeat(spots, festivalReports), [spots, festivalReports]);
+  const area = useMemo(() => (festival ? festivalArea(festival) : null), [festival]);
+  const onSelect = useCallback(
+    (id: string) => navigate(`/e/${festivalId}/p/${id}`),
+    [navigate, festivalId],
+  );
+  const onMapClick = useCallback(
+    (coord: Coord) => update({ lng: coord.lng.toFixed(5), lat: coord.lat.toFixed(5) }),
+    [update],
+  );
+  const onToggle = useCallback(
+    (key: "ctl" | "crowd" | "fw", on: boolean) => update({ [key]: on ? "1" : "0" }),
+    [update],
+  );
+  const onStyle = useCallback(
+    (next: MapStyleId) => update({ map: next === "night" ? null : next }),
+    [update],
   );
 
-  if (!festival) return <Navigate to="/" replace />;
+  if (!festival || !area) return <Navigate to="/" replace />;
 
-  const setTab = (next: string) => {
-    params.set("tab", next);
-    setParams(params, { replace: true });
-  };
-
-  const area = festivalArea(festival);
   const station = festivalStationPoint(festival);
   const stationNames = festivalStationPair(festival);
   const pin = festival.launch ?? spots[0] ?? area.coord;
+  const inSettings = tab === "settings";
+  const todayTag = isFestivalDay(festival, new Date());
+  // 「비 와도 진행 — 비 와도 진행.」처럼 태그와 같은 말이면 메모를 생략한다.
+  const rainNoteRaw = festivalRainNote(festival, lang);
+  const rainNote =
+    rainNoteRaw.replace(/[.。]\s*$/, "") === rainLabel(festival.rainPolicy, t) ? "" : rainNoteRaw;
+  const ics = icsDataUrl(
+    festivalIcs({
+      id: festival.id,
+      date: festival.date,
+      startTime: festival.startTime,
+      endTime: festival.endTime,
+      officialUrl: festival.officialUrl,
+      venueJa: festival.venueJa,
+      title: title?.primary ?? festival.nameKo,
+      description: `${rainLabel(festival.rainPolicy, t)} — ${festivalRainNote(festival, lang)}. ${t.unofficial}`,
+      location: `${festivalVenue(festival, lang).primary}, ${festivalPlace(festival, lang)}`,
+      launch: festival.launch,
+    }),
+  );
 
   return (
     <div className="split">
@@ -79,76 +129,59 @@ export function FestivalPage() {
         key={festival.id}
         launch={festival.launch}
         area={area}
-        station={station?.coord}
+        station={station}
         spots={visibleSpots}
         controls={controls}
         sharePin={sharePin}
         heat={heat}
-        showControls={showControls && tab !== "settings"}
-        showSpots={tab !== "settings"}
-        showCrowd={showCrowd && tab !== "settings"}
+        showControls={showControls && !inSettings}
+        showSpots={!inSettings}
+        showCrowd={showCrowd && !inSettings}
         fireworks={showFireworks}
         fireworksSeed={festival.id}
-        layer={layer}
-        onSelect={(id) => navigate(`/e/${festival.id}/p/${id}`)}
-        labels={{
-          launch: t.pinLaunch,
-          share: t.pinShare,
-          mapAria: t.mapAria,
-          launchAria: t.pinLaunch,
-          shareAria: t.pinShare,
-          approx: t.pinLaunchUnknown,
-          approxAria: areaLabel(area, lang),
-          station: t.pinStation,
-          stationAria: stationNames[lang],
-          spotName: (spot) =>
-            lang === "ja" ? spot.nameJa : lang === "en" ? spotNameEn(spot.id, spot.nameJa) : spot.nameKo,
-        }}
-        onMapClick={(coord) => {
-          params.set("lng", coord.lng.toFixed(5));
-          params.set("lat", coord.lat.toFixed(5));
-          setParams(params, { replace: true });
-        }}
+        style={mapStyleId}
+        onSelect={onSelect}
+        onMapClick={onMapClick}
       />
       <MapLegend />
-      <section className="sheet">
-        <Link className="back" to="/">
-          ← {t.back}
-        </Link>
-        <p className="kicker">
-          {festival.dateEnd
-            ? `${festival.date}–${festival.dateEnd}`
-            : `${festival.date} (${weekday(festival.date, lang)})`}{" "}
-          · {festival.startTime}–{festival.endTime}
-          {isFestivalDay(festival, new Date()) ? ` · ${t.today}` : ""}
-        </p>
-        <h1>
-          <NamePair ko={festival.nameKo} ja={festival.nameJa} en={title?.en} lang={lang} />
-        </h1>
-        <p className="disclaimer">
-          {t.unofficial}
-          {festival.launch ? ` ${t.launchEstimate}` : ` ${t.areaApprox}`}
-        </p>
-        <nav className="tabs">
-          <Tab current={tab} id="event" onClick={setTab}>
-            {t.tabEvent}
-          </Tab>
-          <Tab current={tab} id="spots" onClick={setTab}>
-            {t.tabSpots}
-          </Tab>
-          <Tab current={tab} id="reports" onClick={setTab}>
-            {t.tabReports}
-          </Tab>
-          <Tab current={tab} id="settings" onClick={setTab}>
-            {t.tabSettings}
-          </Tab>
-        </nav>
+      <MapChips
+        controls={showControls}
+        crowd={showCrowd}
+        fireworks={showFireworks}
+        style={mapStyleId}
+        onToggle={onToggle}
+        onStyle={onStyle}
+      />
+      <Sheet ariaLabel={t.eventInfo}>
+        <header className="sheet-head">
+          <Link className="icon-btn" to="/" aria-label={t.back}>
+            <Icon name="chevron-left" />
+          </Link>
+          <div className="sheet-title">
+            <p className="kicker">{festivalPlace(festival, lang)}</p>
+            <h1>
+              <NamePair ko={festival.nameKo} ja={festival.nameJa} en={title?.en} lang={lang} />
+            </h1>
+          </div>
+        </header>
 
-        {tab === "event" && (
-          <div className="stack">
-            <ShareButton title={title?.primary ?? festival.nameKo} />
-            <p>
-              <strong>{t.venue}</strong>{" "}
+        <ul className="meta-list">
+          <li>
+            <Icon name="calendar" />
+            <span>
+              {dateRange(festival, (date) => weekday(date, lang))}
+              {todayTag && <span className="tag tag-live">{t.today}</span>}
+            </span>
+          </li>
+          <li>
+            <Icon name="clock" />
+            <span>
+              {festival.startTime}–{festival.endTime} <span className="dim">Asia/Tokyo</span>
+            </span>
+          </li>
+          <li>
+            <Icon name="pin" />
+            <span>
               <NamePair
                 ko={festival.venueKo}
                 ja={festival.venueJa}
@@ -158,82 +191,145 @@ export function FestivalPage() {
               {area.precision === "city" || area.precision === "prefecture"
                 ? ` · ${areaLabel(area, lang)}`
                 : ""}
-            </p>
-            <p>
-              <strong>{t.station}</strong>{" "}
-              <NamePair
-                ko={stationNames.ko}
-                ja={stationNames.ja}
-                en={stationNames.en}
-                lang={lang}
-              />
-            </p>
-            <p>
-              <strong>{t[rainKey(festival.rainPolicy)]}</strong> — {festivalRainNote(festival, lang)}
-            </p>
-            {festival.shellsApprox != null && (
-              <p>
-                <strong>{t.shells}</strong> {festival.shellsApprox.toLocaleString(localeTag[lang])}
-              </p>
+            </span>
+          </li>
+          <li>
+            <Icon name="train" />
+            <span>
+              <NamePair ko={stationNames.ko} ja={stationNames.ja} en={stationNames.en} lang={lang} />
+            </span>
+          </li>
+          <li>
+            <Icon name="umbrella" />
+            <span>
+              <span className={`tag tag-rain-${festival.rainPolicy}`}>
+                {rainLabel(festival.rainPolicy, t)}
+              </span>
+              {rainNote ? ` ${rainNote}` : ""}
+            </span>
+          </li>
+          {festival.shellsApprox != null && (
+            <li>
+              <Icon name="spark" />
+              <span>
+                {t.shells} {festival.shellsApprox.toLocaleString(localeTag[lang])}
+              </span>
+            </li>
+          )}
+        </ul>
+
+        <div className="action-row">
+          <button type="button" className="pill pill-primary" onClick={() => update({ tab: "spots" })}>
+            <Icon name="eye" size={15} /> {t.findSpots}
+          </button>
+          <a className="pill" href={festival.officialUrl} rel="noreferrer" target="_blank">
+            <Icon name="external" size={15} /> {t.official}
+          </a>
+          <a className="pill" href={ics} download={`${festival.id}.ics`}>
+            <Icon name="calendar" size={15} /> {t.addToCalendar}
+          </a>
+          <ShareButton variant="pill" title={title?.primary ?? festival.nameKo} />
+        </div>
+
+        <p className="disclaimer">
+          {t.unofficial}
+          {festival.launch ? ` ${t.launchEstimate}` : ` ${t.areaApprox}`}
+        </p>
+
+        <nav className="segmented tabs" aria-label={t.eventInfo}>
+          {TABS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-current={tab === id ? "page" : undefined}
+              onClick={() => update({ tab: id === "event" ? null : id })}
+            >
+              {id === "event"
+                ? t.tabEvent
+                : id === "spots"
+                  ? t.tabSpots
+                  : id === "reports"
+                    ? t.tabReports
+                    : t.tabSettings}
+            </button>
+          ))}
+        </nav>
+
+        {tab === "event" && (
+          <div className="stack">
+            {seats.length > 0 && (
+              <section className="block">
+                <h2>
+                  <Icon name="ticket" size={16} /> {t.paidSeats}
+                </h2>
+                {seats.map((seat) => {
+                  const copy = SEAT_COPY[festival.id];
+                  return (
+                    <p key={seat.zoneKo} className="seat">
+                      <strong>{copy?.zone[lang] ?? seat.zoneKo}</strong>
+                      {seat.priceJpy != null
+                        ? ` · ¥${seat.priceJpy.toLocaleString(localeTag[lang])}`
+                        : ""}
+                      <br />
+                      <span className="mute">{copy?.note[lang] ?? seat.noteKo}</span>
+                      {seat.ticketUrl && (
+                        <>
+                          {" "}
+                          <a href={seat.ticketUrl} rel="noreferrer" target="_blank">
+                            {t.official}
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  );
+                })}
+              </section>
             )}
-            {seats.map((seat) => {
-              const copy = SEAT_COPY[festival.id];
-              return (
-              <p key={seat.zoneKo}>
-                <strong>{t.paidSeats}</strong> {copy?.zone[lang] ?? seat.zoneKo}
-                {seat.priceJpy != null ? ` · ¥${seat.priceJpy.toLocaleString(localeTag[lang])}` : ""}
-                <br />
-                {copy?.note[lang] ?? seat.noteKo}
-                {seat.ticketUrl && (
-                  <>
-                    {" "}
-                    <a href={seat.ticketUrl} rel="noreferrer" target="_blank">
-                      {t.official}
-                    </a>
-                  </>
-                )}
-              </p>
-              );
-            })}
-            <p>
-              <a href={festival.officialUrl} rel="noreferrer" target="_blank">
-                {t.official}
-              </a>
-            </p>
             {dates.length > 1 && (
-              <div>
-                <h2>{t.moreDates}</h2>
+              <section className="block">
+                <h2>
+                  <Icon name="calendar" size={16} /> {t.moreDates}
+                </h2>
                 <ul className="dates">
                   {dates.map((row) => (
                     <li key={row.id}>
-                      <Link to={`/e/${row.id}`}>{row.date}</Link>
+                      <Link
+                        className="chip"
+                        to={`/e/${row.id}`}
+                        aria-current={row.id === festival.id ? "page" : undefined}
+                      >
+                        {row.date.slice(5).replace("-", "/")}
+                      </Link>
                     </li>
                   ))}
                 </ul>
+              </section>
+            )}
+            <section className="block">
+              <div className="block-head">
+                <h2>
+                  <Icon name="eye" size={16} /> {t.spotsPreview}
+                </h2>
+                {spots.length > 4 && (
+                  <button type="button" className="link-btn" onClick={() => update({ tab: "spots" })}>
+                    {t.seeAll} <Icon name="chevron-right" size={14} />
+                  </button>
+                )}
               </div>
-            )}
-            <h2>{t.spotsPreview}</h2>
-            {spots.length === 0 ? (
-              <p>{t.noSpots}</p>
-            ) : (
-              <ol className="spot-list">
-                {spots.slice(0, 4).map((spot) => (
-                  <li key={spot.id}>
-                    <Link to={`/e/${festival.id}/p/${spot.id}`}>
-                      <SpotLine spot={spot} t={t} lang={lang} />
-                    </Link>
-                  </li>
-                ))}
-              </ol>
-            )}
+              {spots.length === 0 ? (
+                <p className="mute">{t.noSpots}</p>
+              ) : (
+                <SpotList spots={spots.slice(0, 4)} all={spots} festivalId={festival.id} t={t} lang={lang} />
+              )}
+            </section>
           </div>
         )}
 
         {tab === "spots" && (
           <div className="stack">
-            <ShareButton title={title?.primary ?? festival.nameKo} />
-            <label>
-              {t.searchSpots}
+            <label className="search">
+              <Icon name="filter" size={16} />
+              <span className="sr-only">{t.searchSpots}</span>
               <input
                 type="search"
                 value={q}
@@ -241,54 +337,13 @@ export function FestivalPage() {
                 placeholder={t.searchSpots}
               />
             </label>
-            <div className="toggles">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={showControls}
-                  onChange={(e) => {
-                    params.set("ctl", e.target.checked ? "1" : "0");
-                    setParams(params, { replace: true });
-                  }}
-                />
-                {t.overlayControls}
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={showCrowd}
-                  onChange={(e) => {
-                    params.set("crowd", e.target.checked ? "1" : "0");
-                    setParams(params, { replace: true });
-                  }}
-                />
-                {t.overlayCrowd}
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={showFireworks}
-                  onChange={(e) => {
-                    params.set("fw", e.target.checked ? "1" : "0");
-                    setParams(params, { replace: true });
-                  }}
-                />
-                {t.overlayFireworks}
-              </label>
-            </div>
             <p className="note">{t.notLiveCrowd}</p>
             {visibleSpots.length === 0 ? (
-              <p>{t.noSpots}</p>
+              <p role="status" className="mute">
+                {t.noSpots}
+              </p>
             ) : (
-              <ol className="spot-list">
-                {visibleSpots.map((spot) => (
-                  <li key={spot.id}>
-                    <Link to={`/e/${festival.id}/p/${spot.id}`}>
-                      <SpotLine spot={spot} t={t} lang={lang} />
-                    </Link>
-                  </li>
-                ))}
-              </ol>
+              <SpotList spots={visibleSpots} all={visibleSpots} festivalId={festival.id} t={t} lang={lang} />
             )}
           </div>
         )}
@@ -304,14 +359,20 @@ export function FestivalPage() {
               onSaved={setReports}
             />
             {festivalReports.length === 0 ? (
-              <p>{t.reportEmpty}</p>
+              <p className="mute">{t.reportEmpty}</p>
             ) : (
               <ol className="report-list">
                 {festivalReports.map((report) => (
                   <li key={report.id}>
-                    <strong>{reportKindLabel(report.kind, t)}</strong>
+                    <span className="tag">{reportKindLabel(report.kind, t)}</span>
                     <p>{report.body}</p>
-                    <p className="meta">{report.createdAt}</p>
+                    <p className="meta">
+                      <time dateTime={report.createdAt}>
+                        {new Date(report.createdAt).toLocaleString(localeTag[lang], {
+                          timeZone: "Asia/Tokyo",
+                        })}
+                      </time>
+                    </p>
                   </li>
                 ))}
               </ol>
@@ -322,103 +383,79 @@ export function FestivalPage() {
         {tab === "settings" && (
           <div className="stack">
             <LangSwitch />
-            <p>{t.no3d}</p>
-            <p>
-              <strong>{t.overlaySpots}</strong>
-              <br />
-              <button
-                type="button"
-                onClick={() => {
-                  params.set("map", "pale");
-                  setParams(params, { replace: true });
-                }}
-                aria-pressed={layer === "pale"}
-              >
-                {t.mapPale}
-              </button>{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  params.set("map", "std");
-                  setParams(params, { replace: true });
-                }}
-                aria-pressed={layer === "std"}
-              >
-                {t.mapStd}
-              </button>
-            </p>
-            <p>
+            <div>
+              <strong>{t.mapStyle}</strong>
+              <div className="segmented" role="group" aria-label={t.mapStyle}>
+                {(["night", "photo", "pale"] as const).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onStyle(id)}
+                    aria-pressed={mapStyleId === id}
+                  >
+                    {id === "night" ? t.mapNight : id === "photo" ? t.mapPhoto : t.mapPale}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="note">{t.no3d}</p>
+            <p className="note">
               {t.gsiCredit}{" "}
               <a href="https://maps.gsi.go.jp/development/ichiran.html" rel="noreferrer" target="_blank">
                 地理院タイル
               </a>
             </p>
-            <ShareButton title={title?.primary ?? festival.nameKo} />
           </div>
         )}
-      </section>
+      </Sheet>
     </div>
   );
 }
 
-function Tab({
-  current,
-  id,
-  onClick,
-  children,
-}: {
-  current: string;
-  id: string;
-  onClick: (id: string) => void;
-  children: string;
-}) {
-  const on = current === id;
-  return (
-    <button
-      type="button"
-      aria-current={on ? "page" : undefined}
-      onClick={() => onClick(id)}
-    >
-      {children}
-    </button>
-  );
-}
-
-function rainKey(policy: string) {
-  return {
-    hold: "rainHold",
-    cancel: "rainCancel",
-    postpone: "rainPostpone",
-    unknown: "rainUnknown",
-  }[policy] as "rainHold" | "rainCancel" | "rainPostpone" | "rainUnknown";
-}
-
-function SpotLine({
-  spot,
+function SpotList({
+  spots,
+  all,
+  festivalId,
   t,
   lang,
 }: {
-  spot: ReturnType<typeof decoratedSpots>[number];
-  t: ReturnType<typeof useLang>["t"];
-  lang: ReturnType<typeof useLang>["lang"];
+  spots: DecoratedSpot[];
+  /** 번호는 지도 핀과 같아야 한다. 전체 목록에서의 순서를 쓴다. */
+  all: DecoratedSpot[];
+  festivalId: string;
+  t: Dict;
+  lang: Lang;
 }) {
-  const label =
-    spot.badge === "blocked"
-      ? t.badgeBlocked
-      : spot.badge === "paid"
-        ? t.badgePaid
-        : spot.badge === "vehicle"
-          ? t.badgeVehicle
-          : null;
   return (
-    <>
-      <strong>
-        <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotNameEn(spot.id, spot.nameJa)} lang={lang} />
-      </strong>
-      <span className="meta">
-        {spot.distanceMeters != null ? `${spot.distanceMeters}${t.meters}` : "—"}
-        {label ? ` · ${label}` : ""}
-      </span>
-    </>
+    <ol className="spot-list">
+      {spots.map((spot) => {
+        const index = all.indexOf(spot) + 1;
+        const label = badgeLabel(spot.badge, t);
+        return (
+          <li key={spot.id}>
+            <Link to={`/e/${festivalId}/p/${spot.id}`}>
+              <span className={`pin pin-${spot.badge ?? "open"} pin-static`} aria-hidden="true">
+                {index}
+              </span>
+              <span className="spot-main">
+                <strong>
+                  <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
+                </strong>
+                <span className="meta">
+                  {spot.distanceMeters != null ? `${spot.distanceMeters.toLocaleString()}${t.meters}` : "—"}
+                  {label ? (
+                    <>
+                      {" "}
+                      <span className={`tag tag-${spot.badge}`}>{label}</span>
+                    </>
+                  ) : null}
+                </span>
+              </span>
+              <Icon name="chevron-right" size={16} className="card-chevron" />
+            </Link>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

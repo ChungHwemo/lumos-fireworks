@@ -1,9 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { messages, type Lang } from "./i18n.ts";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { readStorage, writeStorage } from "../data/storage.ts";
+import { isLang, messages, type Dict, type Lang } from "./i18n.ts";
 
 const KEY = "hanabi-lang";
-
-type Dict = Record<keyof (typeof messages)["ko"], string>;
 
 type Ctx = {
   lang: Lang;
@@ -14,26 +21,33 @@ type Ctx = {
 const LangContext = createContext<Ctx | null>(null);
 
 function readLang(): Lang {
-  const stored = localStorage.getItem(KEY);
-  if (stored === "en" || stored === "ja" || stored === "ko") return stored;
-  const nav = navigator.language.toLowerCase();
+  const stored = readStorage(KEY);
+  if (isLang(stored)) return stored;
+  const nav = globalThis.navigator?.language?.toLowerCase() ?? "";
   if (nav.startsWith("ja")) return "ja";
   if (nav.startsWith("en")) return "en";
   return "ko";
 }
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(readLang);
-  const setLang = (next: Lang) => {
-    localStorage.setItem(KEY, next);
+export function LangProvider({
+  children,
+  initial,
+}: {
+  children: ReactNode;
+  /** 테스트나 SSR 에서 브라우저 설정을 건너뛸 때만 준다. */
+  initial?: Lang;
+}) {
+  const [lang, setLangState] = useState<Lang>(() => initial ?? readLang());
+  const setLang = useCallback((next: Lang) => {
+    writeStorage(KEY, next);
     setLangState(next);
-  };
+  }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
   const value = useMemo(
     () => ({ lang, setLang, t: messages[lang] }),
-    [lang],
+    [lang, setLang],
   );
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }
