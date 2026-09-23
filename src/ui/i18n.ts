@@ -2,7 +2,7 @@ export type Lang = "ko" | "ja" | "en";
 
 const ko = {
   appTitle: "일본 불꽃놀이 지도",
-  appBlurb: "2026년 9월 4일 이후 남아 있는 花火大会. 공식 앱이 아닙니다.",
+  appBlurb: "2026년 9월 4일 이후 남아 있는 일본 불꽃축제. 공식 앱이 아닙니다.",
   unofficial: "공식으로 제공하는 정보가 아닙니다. 일정·통제·유료석은 공식 페이지를 다시 확인하세요.",
   shareCopy: "친구에게 위치 공유하고 명당 찾기",
   catalog: "다가오는 행사",
@@ -44,8 +44,8 @@ const ko = {
   copied: "링크를 복사했습니다",
   lang: "언어",
   langKo: "한국어",
-  langJa: "日本語",
-  langEn: "English",
+  langJa: "일본어",
+  langEn: "영어",
   mapStyle: "지도 배경",
   mapNight: "야경 지도",
   mapPhoto: "위성 야경",
@@ -56,8 +56,8 @@ const ko = {
   badgeBlocked: "통제",
   badgePaid: "유료",
   badgeVehicle: "차량규제",
-  no3d: "화면 언어는 한국어·日本語·English입니다. 번역이 없는 메모는 한국어로 남습니다.",
-  gsiCredit: "지도 배경은 국토지리원 최적화 벡터타일·地理院タイル입니다.",
+  no3d: "화면과 본문은 고른 언어 하나로만 보입니다. 지명은 그 언어의 표기를 씁니다.",
+  gsiCredit: "지도 배경은 일본 국토지리원 최적화 벡터타일과 지리원 타일입니다.",
   here: "현위치",
   launchEstimate: "발사 좌표는 추정 앵커입니다.",
   areaApprox: "정확한 좌표는 없고, 지구·시 대략 위치입니다.",
@@ -133,6 +133,11 @@ const ko = {
   locating: "현위치 찾는 중…",
   locateFailed: "현위치를 가져오지 못했습니다. 위치 권한을 확인하세요.",
   toggleAttribution: "출처 보기",
+  gsiTileList: "지리원 타일 목록",
+  theme: "화면 색",
+  themeSystem: "기기 설정",
+  themeLight: "밝게",
+  themeDark: "어둡게",
 } as const;
 
 const ja: Record<keyof typeof ko, string> = {
@@ -178,9 +183,9 @@ const ja: Record<keyof typeof ko, string> = {
   share: "位置を共有",
   copied: "リンクをコピーしました",
   lang: "言語",
-  langKo: "한국어",
+  langKo: "韓国語",
   langJa: "日本語",
-  langEn: "English",
+  langEn: "英語",
   mapStyle: "地図の背景",
   mapNight: "夜景地図",
   mapPhoto: "衛星夜景",
@@ -191,7 +196,7 @@ const ja: Record<keyof typeof ko, string> = {
   badgeBlocked: "規制",
   badgePaid: "有料",
   badgeVehicle: "車両規制",
-  no3d: "画面は한국어・日本語・Englishです。未翻訳のメモは韓国語のままです。",
+  no3d: "画面と本文は選んだ言語ひとつで表示します。地名もその言語の表記です。",
   gsiCredit: "地図背景は国土地理院の最適化ベクトルタイル・地理院タイルです。",
   here: "現在地",
   launchEstimate: "打上座標は推定アンカーです。",
@@ -268,6 +273,11 @@ const ja: Record<keyof typeof ko, string> = {
   locating: "現在地を取得中…",
   locateFailed: "現在地を取得できませんでした。位置情報の許可を確認してください。",
   toggleAttribution: "出典を表示",
+  gsiTileList: "地理院タイル一覧",
+  theme: "画面の色",
+  themeSystem: "端末に合わせる",
+  themeLight: "ライト",
+  themeDark: "ダーク",
 };
 
 const en: Record<keyof typeof ko, string> = {
@@ -314,8 +324,8 @@ const en: Record<keyof typeof ko, string> = {
   share: "Share location",
   copied: "Link copied",
   lang: "Language",
-  langKo: "한국어",
-  langJa: "日本語",
+  langKo: "Korean",
+  langJa: "Japanese",
   langEn: "English",
   mapStyle: "Basemap",
   mapNight: "Night map",
@@ -327,7 +337,7 @@ const en: Record<keyof typeof ko, string> = {
   badgeBlocked: "Closed",
   badgePaid: "Paid",
   badgeVehicle: "Cars banned",
-  no3d: "The UI is Korean, Japanese, or English. Notes without a translation stay in Korean.",
+  no3d: "Everything is shown in the one language you pick, place names included.",
   gsiCredit: "Basemap: GSI optimized vector tiles and GSI raster tiles (Geospatial Information Authority of Japan).",
   here: "You are here",
   launchEstimate: "Launch coordinates are an estimated anchor.",
@@ -404,6 +414,11 @@ const en: Record<keyof typeof ko, string> = {
   locating: "Finding your location…",
   locateFailed: "Could not get your location. Check location permission.",
   toggleAttribution: "Toggle attribution",
+  gsiTileList: "GSI tile list",
+  theme: "Appearance",
+  themeSystem: "Match device",
+  themeLight: "Light",
+  themeDark: "Dark",
 };
 
 export const messages = { ko, ja, en };

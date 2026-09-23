@@ -511,7 +511,7 @@ const SPOTS: Record<string, SpotPack> = {
       en: "About 45 minutes on foot from JR Sakata. Take a shuttle if one runs.",
     },
     access: {
-      ko: "주변 정(町)은 차량 규제. 걸어가면 된다. 유료 게이트와는 별 구역.",
+      ko: "주변 정(마치)은 차량 규제. 걸어가면 된다. 유료 게이트와는 별 구역.",
       ja: "周辺の町は車両規制。歩けば観覧できる。有料ゲートとは別。",
       en: "Nearby blocks ban cars. Walking is fine. Separate from the paid gate.",
     },
@@ -646,7 +646,7 @@ export const CONTROL_COPY: Record<string, { title: Text3; schedule: Text3; detai
     },
     schedule: { ko: "2026-09-12 당일", ja: "2026-09-12当日", en: "12 Sep 2026" },
     detail: {
-      ko: "제초·와카하라·와카타케·료바 정(町) 차량 진입 규제. 걸어가면 관람 가능하다.",
+      ko: "제초·와카하라·와카타케·료바 정(마치) 차량 진입 규제. 걸어가면 관람 가능하다.",
       ja: "瀬越・若原・若竹・両羽の町は車両進入規制。歩けば観覧できる。",
       en: "Cars banned in Segoshi, Wakahara, Wakatake, and Ryoba. Walking in is fine.",
     },
@@ -662,6 +662,34 @@ export const CONTROL_COPY: Record<string, { title: Text3; schedule: Text3; detai
       ko: "유료 관람 구역은 표 없이 입장할 수 없다. 스완파크는 무료.",
       ja: "有料観覧区画は券がなければ入れない。スワンパークは無料。",
       en: "No ticket, no entry to the paid zone. Swan Park is free.",
+    },
+  },
+};
+
+/** 연구 링크의 제목과 한계 메모. 시드는 한국어 원문이고 여기가 나머지 두 언어다. */
+export const RESEARCH_COPY: Record<string, { title: Text3; note: Text3 }> = {
+  "atami-official-viewing": {
+    title: {
+      ko: "열해 해상 불꽃 공식 안내",
+      ja: "熱海海上花火大会 公式案内",
+      en: "Atami Marine Fireworks official notice",
+    },
+    note: {
+      ko: "관람 추천은 주최 쪽 문장이다. 혼잡·폐쇄는 당일 현장 통제가 이긴다.",
+      ja: "観覧のおすすめは主催側の文章。混雑・閉鎖は当日の現場規制が優先する。",
+      en: "Viewing tips are the organizer's words. On the day, crowd and closure calls on site win.",
+    },
+  },
+  "sakata-official-summary": {
+    title: {
+      ko: "사카타 불꽃 개최 개요",
+      ja: "酒田の花火 開催概要",
+      en: "Sakata Fireworks event summary",
+    },
+    note: {
+      ko: "무료는 스완파크, 유료는 표. 좌석 도면은 공식 페이지가 최신이다.",
+      ja: "無料はスワンパーク、有料はチケット。座席図は公式ページが最新。",
+      en: "Free viewing is Swan Park; paid needs a ticket. The official seat map is the current one.",
     },
   },
 };

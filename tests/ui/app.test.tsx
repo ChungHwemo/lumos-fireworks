@@ -43,7 +43,7 @@ test("목록은 기준일 이후 행사만 날짜순으로 보여 준다", () =>
   const sorted = dates.map((d, i) => (i === 0 ? d : d! >= dates[i - 1]! ? d : "BAD"));
   // 시즌 행사(도야코)는 시작일이 지났어도 맨 위에 남고, 그 뒤는 오름차순이다.
   expect(sorted.slice(1)).not.toContain("BAD");
-  expect(screen.getByText(/酒田の花火/)).toBeTruthy();
+  expect(screen.getByText(/사카타 불꽃놀이/)).toBeTruthy();
   expect(screen.queryByText(/2026-09-03/)).toBeNull();
 });
 
@@ -62,7 +62,7 @@ test("목록은 달 단위로 묶이고 시즌 행사는 남은 첫 달에 놓�
   expect(months).toContain("2026년 12월");
   // 4월에 시작한 도야코 롱런은 9월 묶음 안에 있다.
   const september = screen.getAllByRole("heading", { level: 3 })[0].parentElement!;
-  expect(within(september).getByText(/洞爺湖ロングラン/)).toBeTruthy();
+  expect(within(september).getByText(/도야코 롱런 불꽃놀이/)).toBeTruthy();
 });
 
 test("행사 화면의 캘린더 링크는 ICS 데이터 URL 이다", async () => {
@@ -93,10 +93,25 @@ test("현 필터는 그 현만 남긴다", () => {
 
 test("언어를 바꾸면 제목과 html lang 이 따라간다", () => {
   mount("/");
-  fireEvent.click(screen.getByRole("button", { name: "English" }));
+  fireEvent.click(screen.getByRole("button", { name: "영어" }));
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Japan fireworks map");
   expect(document.documentElement.lang).toBe("en");
   expect(localStorage.getItem("hanabi-lang")).toBe("en");
+});
+
+test("목록 뒤에 오로라가 있고 화면 색을 고를 수 있다", () => {
+  mount("/", "ja");
+  expect(document.querySelector(".aurora")).toBeTruthy();
+  const before = document.documentElement.dataset.theme;
+  fireEvent.click(screen.getByRole("button", { name: /画面の色/ }));
+  expect(document.documentElement.dataset.theme).not.toBe(before);
+});
+
+test("설정 화면에 화면 색 전환이 있다", async () => {
+  mount("/e/atami-kaijo-2026-09-13?tab=settings", "ja");
+  await screen.findByTestId("map");
+  expect(screen.getByRole("group", { name: "画面の色" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "韓国語" })).toBeTruthy();
 });
 
 test("모르는 경로는 404 화면이다", () => {

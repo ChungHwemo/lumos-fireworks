@@ -34,7 +34,9 @@ export type IconName =
   | "rotate-cw"
   | "play"
   | "pause"
-  | "locate";
+  | "locate"
+  | "sun"
+  | "moon";
 
 const PATHS: Record<IconName, string> = {
   calendar: "M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z",
@@ -70,6 +72,8 @@ const PATHS: Record<IconName, string> = {
   play: "M8 5v14l11-7Z",
   pause: "M8 5v14M16 5v14",
   locate: "M12 2v3M12 19v3M2 12h3M19 12h3M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12ZM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
+  sun: "M12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4",
+  moon: "M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z",
 };
 
 export function Icon({ name, size = 18, className }: { name: IconName; size?: number; className?: string }) {

@@ -161,6 +161,11 @@ export function areaLabel(area: FestivalArea, lang: "ko" | "ja" | "en"): string 
   return area.label[lang];
 }
 
+/** 현 이름을 화면 언어로. 표에 없으면 원문(일본어)을 그대로 돌려준다. */
+export function prefectureLabel(prefecture: string, lang: "ko" | "ja" | "en"): string {
+  return PREFECTURES[prefecture]?.[lang] ?? prefecture;
+}
+
 export function festivalPlace(
   festival: Pick<Festival, "city" | "prefecture"> & Pick<AreaInput, "venueJa" | "venueKo">,
   lang: "ko" | "ja" | "en",

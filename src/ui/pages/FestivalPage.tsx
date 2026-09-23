@@ -18,11 +18,12 @@ import type { Coord } from "../../domain/types.ts";
 import { festivalIcs, icsDataUrl } from "../calendar.ts";
 import { SEAT_COPY } from "../content.ts";
 import {
-  NamePair,
+  LocalName,
   festivalRainNote,
   festivalStationPair,
   festivalTitle,
   festivalVenue,
+  localized,
 } from "../display.tsx";
 import { localeTag, weekday, type Dict, type Lang } from "../i18n.ts";
 import { Icon } from "../Icon.tsx";
@@ -37,6 +38,7 @@ import { flag, useUpdateParams } from "../searchParams.ts";
 import { parseCoordPair } from "../share.ts";
 import { ShareButton } from "../ShareButton.tsx";
 import { Sheet } from "../Sheet.tsx";
+import { ThemeSwitch } from "../ThemeSwitch.tsx";
 import { useDocumentTitle } from "../useDocumentTitle.ts";
 import { ReportForm } from "./ReportForm.tsx";
 
@@ -160,7 +162,7 @@ export function FestivalPage() {
           <div className="sheet-title">
             <p className="kicker">{festivalPlace(festival, lang)}</p>
             <h1>
-              <NamePair ko={festival.nameKo} ja={festival.nameJa} en={title?.en} lang={lang} />
+              <LocalName ko={festival.nameKo} ja={festival.nameJa} en={title?.en} lang={lang} />
             </h1>
           </div>
         </header>
@@ -182,7 +184,7 @@ export function FestivalPage() {
           <li>
             <Icon name="pin" />
             <span>
-              <NamePair
+              <LocalName
                 ko={festival.venueKo}
                 ja={festival.venueJa}
                 en={festivalVenue(festival, lang).en}
@@ -196,7 +198,7 @@ export function FestivalPage() {
           <li>
             <Icon name="train" />
             <span>
-              <NamePair ko={stationNames.ko} ja={stationNames.ja} en={stationNames.en} lang={lang} />
+              <LocalName ko={stationNames.ko} ja={stationNames.ja} en={stationNames.en} lang={lang} />
             </span>
           </li>
           <li>
@@ -263,15 +265,16 @@ export function FestivalPage() {
                   <Icon name="ticket" size={16} /> {t.paidSeats}
                 </h2>
                 {seats.map((seat) => {
-                  const copy = SEAT_COPY[festival.id];
+                  // 시리즈가 공유하는 좌석 행은 원래 행사 id 를 그대로 가진다. 그 키로 찾는다.
+                  const copy = SEAT_COPY[seat.festivalId];
                   return (
                     <p key={seat.zoneKo} className="seat">
-                      <strong>{copy?.zone[lang] ?? seat.zoneKo}</strong>
+                      <strong>{localized(copy?.zone, lang, seat.zoneKo)}</strong>
                       {seat.priceJpy != null
                         ? ` · ¥${seat.priceJpy.toLocaleString(localeTag[lang])}`
                         : ""}
                       <br />
-                      <span className="mute">{copy?.note[lang] ?? seat.noteKo}</span>
+                      <span className="mute">{localized(copy?.note, lang, seat.noteKo)}</span>
                       {seat.ticketUrl && (
                         <>
                           {" "}
@@ -383,6 +386,7 @@ export function FestivalPage() {
         {tab === "settings" && (
           <div className="stack">
             <LangSwitch />
+            <ThemeSwitch />
             <div>
               <strong>{t.mapStyle}</strong>
               <div className="segmented" role="group" aria-label={t.mapStyle}>
@@ -402,7 +406,7 @@ export function FestivalPage() {
             <p className="note">
               {t.gsiCredit}{" "}
               <a href="https://maps.gsi.go.jp/development/ichiran.html" rel="noreferrer" target="_blank">
-                地理院タイル
+                {t.gsiTileList}
               </a>
             </p>
           </div>
@@ -439,7 +443,7 @@ function SpotList({
               </span>
               <span className="spot-main">
                 <strong>
-                  <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
+                  <LocalName ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
                 </strong>
                 <span className="meta">
                   {spot.distanceMeters != null ? `${spot.distanceMeters.toLocaleString()}${t.meters}` : "—"}

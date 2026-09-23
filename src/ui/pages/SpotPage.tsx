@@ -5,8 +5,8 @@ import { loadReports } from "../../data/reports.ts";
 import { festivalArea } from "../../domain/area.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { festivalStationPoint } from "../../domain/station.ts";
-import { CONTROL_COPY } from "../content.ts";
-import { NamePair, festivalTitle, spotField } from "../display.tsx";
+import { CONTROL_COPY, RESEARCH_COPY } from "../content.ts";
+import { LocalName, festivalTitle, localized, spotField } from "../display.tsx";
 import { Icon, type IconName } from "../Icon.tsx";
 import { badgeLabel, distanceLine, reportKindLabel, spotName } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
@@ -77,7 +77,7 @@ export function SpotPage() {
               {t.spotKicker} · {festivalTitle(festival, lang).primary}
             </p>
             <h1>
-              <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
+              <LocalName ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
             </h1>
           </div>
         </header>
@@ -142,10 +142,10 @@ export function SpotPage() {
               const copy = CONTROL_COPY[control.id];
               return (
                 <p key={control.id} className="control">
-                  <strong>{copy?.title[lang] ?? control.titleKo}</strong>
-                  <span className="mute"> · {copy?.schedule[lang] ?? control.scheduleKo}</span>
+                  <strong>{localized(copy?.title, lang, control.titleKo)}</strong>
+                  <span className="mute"> · {localized(copy?.schedule, lang, control.scheduleKo)}</span>
                   <br />
-                  {copy?.detail[lang] ?? control.detailKo}
+                  {localized(copy?.detail, lang, control.detailKo)}
                 </p>
               );
             })}
@@ -162,14 +162,17 @@ export function SpotPage() {
               <Icon name="external" size={16} /> {t.sources}
             </h2>
             <ul className="source-list">
-              {links.map((link) => (
-                <li key={link.id}>
-                  <a href={link.url} rel="noreferrer" target="_blank">
-                    {link.fallbackTitle}
-                  </a>
-                  <span className="mute">{link.note}</span>
-                </li>
-              ))}
+              {links.map((link) => {
+                const copy = RESEARCH_COPY[link.id];
+                return (
+                  <li key={link.id}>
+                    <a href={link.url} rel="noreferrer" target="_blank">
+                      {localized(copy?.title, lang, link.fallbackTitle)}
+                    </a>
+                    <span className="mute">{localized(copy?.note, lang, link.note)}</span>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )}
@@ -191,7 +194,7 @@ export function SpotPage() {
                       </span>
                       <span className="spot-main">
                         <strong>
-                          <NamePair ko={row.nameKo} ja={row.nameJa} en={spotName(row, "en")} lang={lang} />
+                          <LocalName ko={row.nameKo} ja={row.nameJa} en={spotName(row, "en")} lang={lang} />
                         </strong>
                         <span className="meta">
                           {row.distanceMeters != null

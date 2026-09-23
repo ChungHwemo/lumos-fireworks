@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { decoratedSpots, festivalById } from "../../data/catalog.ts";
 import { lookAtLaunch } from "../../domain/look-at.ts";
-import { NamePair, festivalTitle } from "../display.tsx";
+import { LocalName, festivalTitle } from "../display.tsx";
 import { Icon } from "../Icon.tsx";
 import { spotName } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
@@ -47,9 +47,9 @@ export function LookPage() {
           </div>
         </header>
         <p className="lede">
-          <NamePair ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
+          <LocalName ko={spot.nameKo} ja={spot.nameJa} en={spotName(spot, "en")} lang={lang} />
           {" → "}
-          <NamePair ko={festival.nameKo} ja={festival.nameJa} en={fest.en} lang={lang} />
+          <LocalName ko={festival.nameKo} ja={festival.nameJa} en={fest.en} lang={lang} />
         </p>
         <p className="disclaimer">
           {t.unofficial} {t.look3dNote}

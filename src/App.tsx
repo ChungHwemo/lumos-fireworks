@@ -19,9 +19,21 @@ const LookPage = lazy(() =>
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+/** 예전 주황·남색·금 얼룩. 위치와 색이 천천히 움직인다. */
+export function Atmosphere() {
+  return (
+    <div className="aurora" aria-hidden="true">
+      <i />
+      <i />
+      <i />
+    </div>
+  );
+}
+
 export function AppRoutes() {
   return (
     <RouteErrorBoundary>
+      <Atmosphere />
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<CatalogPage />} />

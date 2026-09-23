@@ -2,9 +2,10 @@
    디자인 토큰. 어두운 지도 위에 얹히는 UI 라 배경·표면·선을 세 단계로만 나눈다.
    강조색은 불꽃의 주황 하나다. 상태색(우천·통제·유료)은 태그에만 쓴다.
 --------------------------------------------------------------------------- */
-:root {
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #111216;
+  --bg: #141018;
   --surface: #1a1b20;
   --surface-2: #23252c;
   --surface-3: #2d3039;
@@ -26,10 +27,38 @@
   --r-lg: 16px;
   --r-pill: 999px;
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+  --aurora-1: rgba(255, 106, 61, 0.32);
+  --aurora-2: rgba(91, 124, 255, 0.26);
+  --aurora-3: rgba(255, 178, 90, 0.16);
   --sans:
     -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
     "Hiragino Sans", "Noto Sans KR", "Noto Sans JP", "Segoe UI", Roboto, sans-serif;
   --sheet-w: min(28rem, 38vw);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3efe6;
+  --surface: #fffdf8;
+  --surface-2: #efe6d8;
+  --surface-3: #e4d8c6;
+  --line: rgba(48, 32, 16, 0.1);
+  --line-strong: rgba(48, 32, 16, 0.2);
+  --ink: #1c1914;
+  --mute: #5c564c;
+  --dim: #8a8378;
+  --accent: #e56a1a;
+  --accent-strong: #c45510;
+  --accent-soft: rgba(229, 106, 26, 0.14);
+  --accent-ink: #fff7ef;
+  --ok: #2a7a4b;
+  --warn: #9a6b00;
+  --bad: #c43131;
+  --info: #2b5ea8;
+  --shadow: 0 12px 32px rgba(60, 40, 20, 0.12);
+  --aurora-1: rgba(255, 122, 61, 0.28);
+  --aurora-2: rgba(92, 132, 210, 0.2);
+  --aurora-3: rgba(255, 186, 92, 0.18);
 }
 
 * { box-sizing: border-box; }
@@ -44,9 +73,65 @@ html, body, #root {
 }
 html {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 8% -8%, var(--aurora-1), transparent 52%),
+    radial-gradient(780px 480px at 100% 4%, var(--aurora-2), transparent 48%),
+    radial-gradient(640px 360px at 70% 100%, var(--aurora-3), transparent 42%);
+  background-attachment: fixed;
 }
-body { background: var(--bg); line-height: 1.5; }
+body { background: transparent; line-height: 1.5; }
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aurora i {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  filter: blur(72px);
+  will-change: transform, filter;
+}
+.aurora i:nth-child(1) {
+  width: 28rem;
+  height: 28rem;
+  left: -6rem;
+  top: -8rem;
+  background: #ff6a3d;
+  opacity: 0.42;
+  animation: aurora-drift 18s ease-in-out infinite;
+}
+.aurora i:nth-child(2) {
+  width: 24rem;
+  height: 24rem;
+  right: -5rem;
+  top: 12%;
+  background: #5b7cff;
+  opacity: 0.36;
+  animation: aurora-drift 22s ease-in-out infinite reverse;
+}
+.aurora i:nth-child(3) {
+  width: 22rem;
+  height: 22rem;
+  left: 30%;
+  bottom: -8rem;
+  background: #ffb25a;
+  opacity: 0.22;
+  animation: aurora-drift 26s ease-in-out infinite 1.4s;
+}
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); filter: blur(72px) hue-rotate(0deg); }
+  50% { transform: translate(10%, 8%) scale(1.12); filter: blur(84px) hue-rotate(28deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora i { animation: none; }
+}
+
+.page, .split, .loading { position: relative; z-index: 1; }
 
 a { color: var(--accent-strong); text-underline-offset: 2px; }
 h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
@@ -196,6 +281,7 @@ button:disabled { cursor: progress; opacity: 0.6; }
 --------------------------------------------------------------------------- */
 .page-list { max-width: 42rem; margin: 0 auto; padding: 1rem 1rem 4rem; display: grid; gap: 0.85rem; }
 .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.topbar-tools { display: flex; align-items: center; gap: 0.45rem; }
 .topbar h1 { font-size: 1.5rem; margin-top: 0.15rem; }
 .filters { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 .month { display: grid; gap: 0.5rem; }

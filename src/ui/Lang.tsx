@@ -20,13 +20,12 @@ type Ctx = {
 
 const LangContext = createContext<Ctx | null>(null);
 
+/** 기본은 日本語. 사용자가 고른 언어만 이긴다. 브라우저 언어는 보지 않는다. */
+export const DEFAULT_LANG: Lang = "ja";
+
 function readLang(): Lang {
   const stored = readStorage(KEY);
-  if (isLang(stored)) return stored;
-  const nav = globalThis.navigator?.language?.toLowerCase() ?? "";
-  if (nav.startsWith("ja")) return "ja";
-  if (nav.startsWith("en")) return "en";
-  return "ko";
+  return isLang(stored) ? stored : DEFAULT_LANG;
 }
 
 export function LangProvider({

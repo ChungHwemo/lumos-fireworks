@@ -1,16 +1,17 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals } from "../../data/catalog.ts";
-import { festivalPlace } from "../../domain/area.ts";
+import { festivalPlace, prefectureLabel } from "../../domain/area.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
 import { parseFromQuery } from "../../domain/query.ts";
 import type { FestivalRecord } from "../../domain/types.ts";
-import { NamePair, festivalStation, festivalTitle } from "../display.tsx";
+import { LocalName, festivalStation, festivalTitle } from "../display.tsx";
 import { weekday } from "../i18n.ts";
 import { Icon } from "../Icon.tsx";
 import { monthLabel, rainLabel, shortMonth } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
 import { LangSwitch } from "../LangSwitch.tsx";
+import { ThemeToggle } from "../ThemeSwitch.tsx";
 import { flag, useUpdateParams } from "../searchParams.ts";
 import { useDocumentTitle } from "../useDocumentTitle.ts";
 
@@ -65,7 +66,10 @@ export function CatalogPage() {
           <p className="kicker">Asia/Tokyo · {from}</p>
           <h1>{t.appTitle}</h1>
         </div>
-        <LangSwitch compact />
+        <div className="topbar-tools">
+          <ThemeToggle />
+          <LangSwitch compact />
+        </div>
       </header>
       <p className="lede">{t.appBlurb}</p>
 
@@ -113,7 +117,7 @@ export function CatalogPage() {
             <option value="">{t.allPref}</option>
             {prefs.map((name) => (
               <option key={name} value={name}>
-                {name}
+                {prefectureLabel(name, lang)}
               </option>
             ))}
           </select>
@@ -168,7 +172,7 @@ export function CatalogPage() {
                       {festival.dateEnd ? `${festival.date}–${festival.dateEnd}` : festival.date}
                     </time>
                     <strong className="card-title">
-                      <NamePair
+                      <LocalName
                         ko={festival.nameKo}
                         ja={festival.nameJa}
                         en={festivalTitle(festival, lang).en}
