@@ -25,6 +25,9 @@ export function MapLegend() {
           <Glyph kind="share" /> {t.pinShare}
         </li>
         <li>
+          <Glyph kind="here" /> {t.here}
+        </li>
+        <li>
           <span className="pin pin-open pin-static">1</span> {t.legendSpotOpen}
         </li>
         <li>

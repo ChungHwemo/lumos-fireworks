@@ -4,7 +4,7 @@
  * 발사 지점 버스트는 자체 제작이다. 花火 도기호가 어느 표준에도 없다.
  * JIS Z 8210은 쓰지 않는다. 근거는 docs/prd/2026-09-03-map-3d-fireworks.md D5.
  */
-export type PinKind = "launch" | "launchUnknown" | "station" | "share";
+export type PinKind = "launch" | "launchUnknown" | "station" | "share" | "here";
 
 const BOX = 'viewBox="0 -960 960 960" width="16" height="16" aria-hidden="true" focusable="false"';
 
@@ -21,6 +21,9 @@ const PATHS: Record<PinKind, string> = {
   // Material Symbols: share
   share:
     "M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5T638-672L356-508q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Z",
+  // Material Symbols: my_location
+  here:
+    "M440-42v-80q-125-14-214.5-103.5T122-440H42v-80h80q14-125 103.5-214.5T440-838v-80h80v80q125 14 214.5 103.5T838-520h80v80h-80q-14 125-103.5 214.5T520-122v80h-80Zm40-158q116 0 198-82t82-198q0-116-82-198t-198-82q-116 0-198 82t-82 198q0 116 82 198t198 82Zm0-120q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Z",
 };
 
 export function pinIcon(kind: PinKind): string {

@@ -25,6 +25,8 @@ npm run build     # dist/ + GitHub Pages 용 404.html
 - **위성 야경** — [地理院タイル](https://maps.gsi.go.jp/development/ichiran.html) シームレス空中写真을 어둡게 눌러 표시합니다.
 - **담색 지도** — 地理院タイル 淡色地図.
 
+조작은 시트 위 오른쪽 묶음에서 합니다: 컴패스(탭 = 북쪽, 끌기 = 회전·기울기), 45° 회전, 2D/3D, 자동 회전 재생/정지, 현위치, 확대/축소. 우클릭·Ctrl 드래그·두 손가락 회전과 `Shift`+방향키도 그대로 됩니다. 진입 시 자동으로 90°/40초 돌고, 지도를 만지면 멈춥니다.
+
 지형 표고는 AWS Terrain Tiles(SRTM terrain data courtesy of the U.S. Geological Survey)입니다. 국토지리원 DEM을 쓰지 않는 이유는 `docs/prd/2026-09-03-map-3d-fireworks.md` D2에 있습니다.
 
 지도 핀 픽토그램은 [Material Symbols](https://github.com/google/material-design-icons) (Apache-2.0)이고 발사 지점 아이콘과 UI 선 아이콘(`src/ui/Icon.tsx`)은 자체 제작입니다.

@@ -1,14 +1,7 @@
-import {
-  AttributionControl,
-  GeolocateControl,
-  MapLibreMap,
-  Marker,
-  NavigationControl,
-  setWorkerUrl,
-} from "maplibre-gl";
+import { AttributionControl, MapLibreMap, Marker, setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DecoratedSpot } from "../../data/catalog.ts";
 import { areaLabel, type FestivalArea } from "../../domain/area.ts";
 import { unknownLaunchOffset } from "../../domain/burst.ts";
@@ -24,7 +17,8 @@ import {
   type FireworksLayer,
 } from "./fireworks-layer.ts";
 import { mapStyle, type MapStyleId } from "./gsi-style.ts";
-import { pinIcon, type PinKind } from "./pin-icons.ts";
+import { MapControls } from "./MapControls.tsx";
+import { pinMarker } from "./markers.ts";
 
 // v6 는 ESM 전용이라 번들러가 워커 경로를 모른다. 한 번만 알려 준다.
 setWorkerUrl(workerUrl);
@@ -60,6 +54,9 @@ type Latest = Props & { lang: Lang; t: Dict };
 const FOCUS_ZOOM = 15;
 const ORBIT_MS = 40_000;
 const ORBIT_DEG = 90;
+/** 熱海 같은 해안 지형에서 83° 를 넘으면 카메라가 능선 안으로 들어가 화면이 줄무늬가 된다. */
+export const MAX_PITCH = 80;
+const ENTRY_PITCH = 78;
 
 let webgl2: boolean | null = null;
 /** 페이지당 한 번만 캔버스를 만들어 본다. v6 는 WebGL2 없이는 지도를 만들지 못한다. */
@@ -102,6 +99,10 @@ export function FestivalMap(props: Props) {
   const ready = useRef(false);
   const fireworksRef = useRef<FireworksLayer | null>(null);
   const markers = useRef<Marker[]>([]);
+  // 스타일이 한 번 올라온 뒤에야 컨트롤을 그린다. 그 전에는 카메라를 만질 게 없다.
+  const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
+  const orbitRef = useRef<{ start(): void; stop(): void; toggle(): void } | null>(null);
+  const [orbiting, setOrbiting] = useState(false);
 
   // 지도 콜백은 마운트 때 한 번 묶인다. 최신 props 는 여기서 읽는다. 렌더 중에는 건드리지 않는다.
   const latest = useRef<Latest>({ ...props, lang, t });
@@ -130,11 +131,16 @@ export function FestivalMap(props: Props) {
         style: mapStyle(init.style),
         center: [center.lng, center.lat],
         zoom: initialFocus || init.launch ? FOCUS_ZOOM : init.area.zoom,
-        pitch: 78,
+        pitch: ENTRY_PITCH,
         bearing: 0,
         canvasContextAttributes: { antialias: true },
         attributionControl: false,
-        maxPitch: 85,
+        maxPitch: MAX_PITCH,
+        // 남은 기본 컨트롤은 출처 토글뿐이다. 그것도 화면 언어를 따른다.
+        locale: {
+          "AttributionControl.ToggleAttribution": init.t.toggleAttribution,
+          "Map.Title": init.t.mapAria,
+        },
       });
     } catch (error) {
       // GPU 가 막힌 브라우저. 지도 없이도 시트는 읽을 수 있어야 한다.
@@ -145,23 +151,16 @@ export function FestivalMap(props: Props) {
       host.replaceChildren(note);
       return () => host.replaceChildren();
     }
+    // 확대·컴패스·현위치는 MapControls 가 그린다. MapLibre 기본 컨트롤은 출처만 남긴다.
     map.addControl(new AttributionControl({ compact: true }), "bottom-left");
-    map.addControl(new NavigationControl({ showCompass: true }), "top-left");
-    map.addControl(
-      new GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: false,
-      }),
-      "top-left",
-    );
     mapRef.current = map;
 
-    // 진입 오비트. 중심을 두고 90°를 40초에 돈다. 사용자가 만지면 멈추고 다시 돌지 않는다.
+    // 진입 오비트. 중심을 두고 90°를 40초에 돈다. 사용자가 만지면 멈추고, 재생 버튼으로만 다시 돈다.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let orbiting = !reduced.matches;
+    let orbitOn = false;
     let orbitTimer = 0;
     const orbitStep = () => {
-      if (!orbiting) return;
+      if (!orbitOn) return;
       map.easeTo({
         bearing: map.getBearing() + ORBIT_DEG,
         duration: ORBIT_MS,
@@ -169,11 +168,23 @@ export function FestivalMap(props: Props) {
       });
       orbitTimer = window.setTimeout(orbitStep, ORBIT_MS);
     };
+    const startOrbit = () => {
+      if (orbitOn) return;
+      orbitOn = true;
+      setOrbiting(true);
+      orbitStep();
+    };
     const stopOrbit = () => {
-      if (!orbiting) return;
-      orbiting = false;
+      if (!orbitOn) return;
+      orbitOn = false;
+      setOrbiting(false);
       window.clearTimeout(orbitTimer);
       map.stop();
+    };
+    orbitRef.current = {
+      start: startOrbit,
+      stop: stopOrbit,
+      toggle: () => (orbitOn ? stopOrbit() : startOrbit()),
     };
 
     // 불꽃 정지 조건: 토글 꺼짐, 탭 백그라운드, 모션 감소 설정 중 하나라도 걸리면 멈춘다.
@@ -190,7 +201,8 @@ export function FestivalMap(props: Props) {
         map.resize();
         // bounds 를 맞추지 않는다. fitBounds 는 평면 기준이라 pitch 78 의 사다리꼴 가시영역에서
         // 어긋나고, 시트가 지도 오른쪽을 덮는 것도 모른다. 앵커든 지구 대략 좌표든 중심으로 잡는다.
-        if (orbiting) orbitStep();
+        if (!reduced.matches) startOrbit();
+        setMapInstance(map);
       }
       if (!map.getLayer(FIREWORKS_LAYER_ID)) {
         const seed = latest.current.fireworksSeed ?? "unknown";
@@ -229,11 +241,25 @@ export function FestivalMap(props: Props) {
       window.clearTimeout(orbitTimer);
       host.removeEventListener("pointerdown", stopOrbit, { capture: true });
       fireworksRef.current = null;
+      orbitRef.current = null;
       ready.current = false;
       map.remove();
       mapRef.current = null;
     };
   }, []);
+
+  const stopOrbit = useCallback(() => orbitRef.current?.stop(), []);
+  const toggleOrbit = useCallback(() => orbitRef.current?.toggle(), []);
+  // 현위치 핀은 오버레이 목록 밖에 둔다. 오버레이는 매번 지우고 다시 그린다.
+  const placeHere = useCallback(
+    (coord: Coord, label: string) => {
+      const map = mapRef.current;
+      if (!map) return () => {};
+      const marker = pinMarker(map, coord, "pin pin-here", "here", label, label);
+      return () => marker.remove();
+    },
+    [],
+  );
 
   // 배경을 갈아 끼운다. style.load 가 다시 오면 불꽃 레이어와 오버레이가 거기서 다시 붙는다.
   const appliedStyle = useRef(style);
@@ -284,7 +310,20 @@ export function FestivalMap(props: Props) {
       </div>
     );
   }
-  return <div ref={root} className="map" role="application" aria-label={t.mapAria} />;
+  return (
+    <>
+      <div ref={root} className="map" role="application" aria-label={t.mapAria} />
+      {mapInstance && (
+        <MapControls
+          map={mapInstance}
+          orbiting={orbiting}
+          onOrbitToggle={toggleOrbit}
+          onInteract={stopOrbit}
+          placeHere={placeHere}
+        />
+      )}
+    </>
+  );
 }
 
 function dropLayer(map: MapLibreMap, id: string) {
@@ -368,10 +407,10 @@ function drawOverlays(map: MapLibreMap, markers: { current: Marker[] }, s: Lates
   }
 
   if (s.launch) {
-    markers.current.push(pin(map, s.launch, "pin pin-launch", "launch", s.t.pinLaunch, s.t.pinLaunch));
+    markers.current.push(pinMarker(map, s.launch, "pin pin-launch", "launch", s.t.pinLaunch, s.t.pinLaunch));
   } else if (s.area.precision !== "launch") {
     markers.current.push(
-      pin(
+      pinMarker(
         map,
         s.area.coord,
         "pin pin-approx",
@@ -384,12 +423,12 @@ function drawOverlays(map: MapLibreMap, markers: { current: Marker[] }, s: Lates
 
   if (s.station) {
     markers.current.push(
-      pin(map, s.station.coord, "pin pin-station", "station", s.t.pinStation, s.station.label[s.lang]),
+      pinMarker(map, s.station.coord, "pin pin-station", "station", s.t.pinStation, s.station.label[s.lang]),
     );
   }
 
   if (s.sharePin) {
-    markers.current.push(pin(map, s.sharePin, "pin pin-share", "share", s.t.pinShare, s.t.pinShare));
+    markers.current.push(pinMarker(map, s.sharePin, "pin pin-share", "share", s.t.pinShare, s.t.pinShare));
   }
 
   if (s.showSpots) {
@@ -407,24 +446,4 @@ function drawOverlays(map: MapLibreMap, markers: { current: Marker[] }, s: Lates
       markers.current.push(new Marker({ element: el }).setLngLat([spot.lng, spot.lat]).addTo(map));
     }
   }
-}
-
-function pin(
-  map: MapLibreMap,
-  coord: Coord,
-  className: string,
-  kind: PinKind,
-  label: string,
-  aria: string,
-) {
-  const el = document.createElement("button");
-  el.className = className;
-  el.type = "button";
-  // 마크업은 우리 상수뿐이다. 사용자 입력이 들어오지 않는다.
-  el.innerHTML = pinIcon(kind);
-  const text = document.createElement("span");
-  text.textContent = label;
-  el.appendChild(text);
-  el.setAttribute("aria-label", aria);
-  return new Marker({ element: el }).setLngLat([coord.lng, coord.lat]).addTo(map);
 }

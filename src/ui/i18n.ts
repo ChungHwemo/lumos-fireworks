@@ -119,6 +119,20 @@ const ko = {
   otherSpots: "다른 명당",
   noLaunchDistance: "발사 앵커가 없어 거리를 계산하지 않습니다.",
   eventInfo: "행사 정보",
+  mapControls: "지도 조작",
+  zoomIn: "확대",
+  zoomOut: "축소",
+  resetNorth: "북쪽을 위로",
+  compassHint: "끌어서 돌리고 기울이기",
+  bearingNow: "방위",
+  rotateLeft: "왼쪽으로 45° 회전",
+  rotateRight: "오른쪽으로 45° 회전",
+  tilt3d: "3D로 기울이기",
+  tilt2d: "2D로 펴기",
+  orbit: "자동 회전",
+  locating: "현위치 찾는 중…",
+  locateFailed: "현위치를 가져오지 못했습니다. 위치 권한을 확인하세요.",
+  toggleAttribution: "출처 보기",
 } as const;
 
 const ja: Record<keyof typeof ko, string> = {
@@ -240,6 +254,20 @@ const ja: Record<keyof typeof ko, string> = {
   otherSpots: "ほかのスポット",
   noLaunchDistance: "打上アンカーがないので距離は出しません。",
   eventInfo: "大会情報",
+  mapControls: "地図の操作",
+  zoomIn: "拡大",
+  zoomOut: "縮小",
+  resetNorth: "北を上に",
+  compassHint: "ドラッグで回転・傾き",
+  bearingNow: "方位",
+  rotateLeft: "左に45°回転",
+  rotateRight: "右に45°回転",
+  tilt3d: "3Dに傾ける",
+  tilt2d: "2Dに戻す",
+  orbit: "自動回転",
+  locating: "現在地を取得中…",
+  locateFailed: "現在地を取得できませんでした。位置情報の許可を確認してください。",
+  toggleAttribution: "出典を表示",
 };
 
 const en: Record<keyof typeof ko, string> = {
@@ -362,6 +390,20 @@ const en: Record<keyof typeof ko, string> = {
   otherSpots: "Other spots",
   noLaunchDistance: "No launch anchor, so no distance is shown.",
   eventInfo: "Event",
+  mapControls: "Map controls",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  resetNorth: "Reset north",
+  compassHint: "Drag to rotate and tilt",
+  bearingNow: "Heading",
+  rotateLeft: "Rotate left 45°",
+  rotateRight: "Rotate right 45°",
+  tilt3d: "Tilt to 3D",
+  tilt2d: "Flatten to 2D",
+  orbit: "Auto-rotate",
+  locating: "Finding your location…",
+  locateFailed: "Could not get your location. Check location permission.",
+  toggleAttribution: "Toggle attribution",
 };
 
 export const messages = { ko, ja, en };

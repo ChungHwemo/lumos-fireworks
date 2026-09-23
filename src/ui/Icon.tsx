@@ -27,7 +27,14 @@ export type IconName =
   | "layers"
   | "ticket"
   | "check"
-  | "close";
+  | "close"
+  | "plus"
+  | "minus"
+  | "rotate-ccw"
+  | "rotate-cw"
+  | "play"
+  | "pause"
+  | "locate";
 
 const PATHS: Record<IconName, string> = {
   calendar: "M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z",
@@ -55,6 +62,14 @@ const PATHS: Record<IconName, string> = {
   ticket: "M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V7ZM10 7v10",
   check: "M5 12.5l4.5 4.5L19 7.5",
   close: "M6 6l12 12M18 6 6 18",
+  plus: "M12 5v14M5 12h14",
+  minus: "M5 12h14",
+  // 위에서 출발해 3/4 바퀴 도는 호. 화살촉은 도착점에서 진행 방향(위)을 가리킨다.
+  "rotate-ccw": "M12 4a8 8 0 1 0 8 8M23 15l-3-3-3 3",
+  "rotate-cw": "M12 4a8 8 0 1 1-8 8M1 15l3-3 3 3",
+  play: "M8 5v14l11-7Z",
+  pause: "M8 5v14M16 5v14",
+  locate: "M12 2v3M12 19v3M2 12h3M19 12h3M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12ZM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z",
 };
 
 export function Icon({ name, size = 18, className }: { name: IconName; size?: number; className?: string }) {
