@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals } from "../../data/catalog.ts";
 import { festivalPlace, prefectureLabel } from "../../domain/area.ts";
-import { formatClock, isFestivalDay } from "../../domain/festival.ts";
+import { isFestivalDay } from "../../domain/festival.ts";
 import { parseFromQuery } from "../../domain/query.ts";
 import type { FestivalRecord } from "../../domain/types.ts";
-import { LocalName, festivalStation, festivalTitle } from "../display.tsx";
+import { LocalName, festivalClock, festivalStation, festivalTitle } from "../display.tsx";
 import { weekday } from "../i18n.ts";
 import { Icon } from "../Icon.tsx";
 import { monthLabel, rainLabel, shortMonth } from "../labels.ts";
@@ -182,8 +182,7 @@ export function CatalogPage() {
                     <p className="card-line">
                       <Icon name="pin" size={14} /> {festivalPlace(festival, lang)}
                       <span className="dot" />
-                      <Icon name="clock" size={14} />{" "}
-                      {formatClock(festival.startTime, festival.endTime, festival.timeBasis)}
+                      <Icon name="clock" size={14} /> {festivalClock(festival, lang)}
                       {festival.timeBasis === "prior-year" && (
                         <span className="dim"> {t.timePriorYear}</span>
                       )}
@@ -199,6 +198,9 @@ export function CatalogPage() {
                     </p>
                     <p className="card-tags">
                       {isFestivalDay(festival, today) && <span className="tag tag-live">{t.today}</span>}
+                      {festival.kind === "illumination" && (
+                        <span className="tag">{t.kindIllumination}</span>
+                      )}
                       {festival.scheduleStatus === "planned" && (
                         <span className="tag">{t.schedulePlanned}</span>
                       )}

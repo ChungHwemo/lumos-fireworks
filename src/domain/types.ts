@@ -75,8 +75,10 @@ export type FestivalRecord = Festival & {
   disclaimerKo: string;
   /** official: 올해 주최 시각. prior-year: 전년 공식 시각. unpublished-end: 시작만 공식. */
   timeBasis?: "official" | "prior-year" | "unpublished-end";
-  /** 주최가 개최 예정이라고 쓴 날. 없으면 날짜가 확정된 것으로 본다. */
+  /** 주최가 예정이라고 쓴 날. 없으면 날짜가 확정된 것으로 본다. */
   scheduleStatus?: "planned";
+  /** 없으면 불꽃. 일루미네이션은 지도의 불꽃 대신 가로등·나무 빛을 그린다. */
+  kind?: "hanabi" | "illumination";
 };
 
 export type SpotRecord = Coord & {

@@ -16,6 +16,7 @@ import {
   FIREWORKS_LAYER_ID,
   type FireworksLayer,
 } from "./fireworks-layer.ts";
+import { createIlluminationLayer } from "./illumination-layer.ts";
 import { mapStyle, type MapStyleId } from "./gsi-style.ts";
 import { MapControls } from "./MapControls.tsx";
 import { pinMarker } from "./markers.ts";
@@ -44,6 +45,8 @@ type Props = {
   showCrowd?: boolean;
   fireworks?: boolean;
   fireworksSeed?: string;
+  /** illumination 이면 폭죽 대신 나무·터널 빛을 그린다. */
+  kind?: "hanabi" | "illumination";
   style: MapStyleId;
   onSelect: (spotId: string) => void;
   onMapClick?: (coord: Coord) => void;
@@ -207,8 +210,14 @@ export function FestivalMap(props: Props) {
       if (!map.getLayer(FIREWORKS_LAYER_ID)) {
         const seed = latest.current.fireworksSeed ?? "unknown";
         const base = latest.current.launch ?? latest.current.area.coord;
-        const anchor = latest.current.launch ?? unknownLaunchOffset(base, seed);
-        const created = createFireworksLayer(anchor);
+        const illumination = latest.current.kind === "illumination";
+        // 불꽃은 발사 좌표가 없으면 시 중심에서 조금 비킨다. 일루미네이션은 그 장소가 빛이므로 비키지 않는다.
+        const anchor = illumination
+          ? base
+          : (latest.current.launch ?? unknownLaunchOffset(base, seed));
+        const created = illumination
+          ? createIlluminationLayer(anchor)
+          : createFireworksLayer(anchor);
         fireworksRef.current = created;
         map.addLayer(created);
         syncRunning();

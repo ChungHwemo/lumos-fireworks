@@ -7,6 +7,8 @@ type FestivalCopy = {
   stationEn: string;
   rainJa: string;
   rainEn: string;
+  /** 있으면 시:분 대신 이 문장을 시계로 보여 준다. */
+  clock?: { ko: string; ja: string; en: string };
 };
 
 type Text3 = Record<Lang, string>;
@@ -259,6 +261,55 @@ const FESTIVALS: Record<string, FestivalCopy> = {
     stationEn: "See official transit notes",
     rainJa: "2027の雨天は未発表。19:20–21:00はサイトのプログラム表で、2027告知は日付のみ。",
     rainEn: "2027 rain rule is unpublished. 19:20–21:00 is the program table on the site. The 2027 notice gives the date only.",
+  },
+  "nabana-illum": {
+    nameEn: "Nabana no Sato Illumination",
+    venueEn: "Nabana no Sato",
+    stationJa: "近鉄長島駅",
+    stationEn: "Kintetsu Nagashima Station",
+    rainJa: "点灯は日没頃から閉園まで。1月6日・7日は休み。",
+    rainEn: "Lights run from dusk until closing. Closed 6–7 Jan.",
+    clock: { ko: "해 질 무렵–폐원", ja: "日没頃–閉園", en: "Dusk until close" },
+  },
+  "sapporo-white": {
+    nameEn: "Sapporo White Illumination",
+    venueEn: "Odori and Sapporo Station area",
+    stationJa: "地下鉄大通駅",
+    stationEn: "Subway Odori Station",
+    rainJa: "大通と南一条は12月25日まで。駅前通は2027年2月11日まで。赤れんがと駅南口は3月14日まで。一部は24時まで。",
+    rainEn: "Odori and Minami 1 end 25 Dec. Ekimae-dori ends 11 Feb 2027. Akapla and the station plaza run to 14 Mar. Some stay on until 24:00.",
+  },
+  "midosuji-illum": {
+    nameEn: "Midosuji Illumination",
+    venueEn: "Midosuji",
+    stationJa: "Osaka Metro梅田–なんば",
+    stationEn: "Osaka Metro Umeda to Namba",
+    rainJa: "17時頃から25時。点灯式は11月23日、雨天決行・荒天中止。",
+    rainEn: "About 17:00 to 25:00. Lighting ceremony 23 Nov: held in rain, cancelled in a storm.",
+  },
+  "osaka-renaissance": {
+    nameEn: "OSAKA Light Renaissance",
+    venueEn: "Nakanoshima",
+    stationJa: "なにわ橋駅",
+    stationEn: "Naniwabashi Station",
+    rainJa: "市役所正面と中之島ストリートは11月3日–12月31日、17時–25時。投影は12月11日–25日。",
+    rainEn: "City hall facade and Nakanoshima street: 3 Nov–31 Dec, 17:00–25:00. Projection mapping 11–25 Dec.",
+  },
+  "wakayama-keyaki": {
+    nameEn: "Keyaki Light Parade",
+    venueEn: "Keyaki-dori, Wakayama",
+    stationJa: "JR和歌山駅",
+    stationEn: "JR Wakayama Station",
+    rainJa: "17:00–23:00。実行委員会が2026年7月1日に発表。",
+    rainEn: "17:00–23:00. Announced by the executive committee on 1 Jul 2026.",
+  },
+  "ashikaga-flower-light": {
+    nameEn: "Flower Fantasy, Garden of Light",
+    venueEn: "Ashikaga Flower Park",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "栃木県観光の掲載は予定。点灯は16:30頃。平日の夜は20:30、土日祝は21:00。冬は延びる。12月31日のみ休園。",
+    rainEn: "Tochigi tourism lists this as planned. Lights from about 16:30. Weeknights to 20:30, weekends to 21:00, later in midwinter. Closed only 31 Dec.",
   },
 };
 

@@ -13,15 +13,18 @@ export function MapChips({
   style,
   onToggle,
   onStyle,
+  sparkLabel,
 }: {
   controls: boolean;
   crowd: boolean;
   fireworks: boolean;
   style: MapStyleId;
+  sparkLabel?: string;
   onToggle: (key: "ctl" | "crowd" | "fw", on: boolean) => void;
   onStyle: (style: MapStyleId) => void;
 }) {
   const { t } = useLang();
+  const spark = sparkLabel ?? t.overlayFireworks;
   const styleLabel: Record<MapStyleId, string> = {
     night: t.mapNight,
     photo: t.mapPhoto,
@@ -55,11 +58,11 @@ export function MapChips({
         type="button"
         className="chip"
         aria-pressed={fireworks}
-        aria-label={t.overlayFireworks}
-        title={t.overlayFireworks}
+        aria-label={spark}
+        title={spark}
         onClick={() => onToggle("fw", !fireworks)}
       >
-        <Icon name="spark" size={15} /> <span className="chip-label">{t.overlayFireworks}</span>
+        <Icon name="spark" size={15} /> <span className="chip-label">{spark}</span>
       </button>
       <button
         type="button"

@@ -1,3 +1,4 @@
+import { formatClock } from "../domain/festival.ts";
 import { festivalStationPoint } from "../domain/station.ts";
 import type { FestivalRecord, SpotRecord } from "../domain/types.ts";
 import { festivalCopy, spotCopy } from "./content.ts";
@@ -22,6 +23,13 @@ export function LocalName({
   lang: Lang;
 }) {
   return <>{localName({ ko, ja, en }, lang)}</>;
+}
+
+/** 시리즈에 문장 시계가 있으면 시:분 대신 그 문장을 쓴다. */
+export function festivalClock(festival: FestivalRecord, lang: Lang): string {
+  const copy = festivalCopy(festival.seriesId);
+  if (copy.clock) return localName(copy.clock, lang);
+  return formatClock(festival.startTime, festival.endTime, festival.timeBasis);
 }
 
 export function festivalTitle(festival: FestivalRecord, lang: Lang) {

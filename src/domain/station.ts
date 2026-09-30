@@ -94,6 +94,22 @@ const STATIONS: Record<string, StationPoint> = {
     coord: { lng: 136.9631, lat: 35.0119 },
     label: { ko: "JR 오부역", ja: "JR大府駅", en: "JR Obu Station" },
   },
+  "nabana-illum": {
+    coord: { lng: 136.704, lat: 35.066 },
+    label: { ko: "긴테츠 나가시마역", ja: "近鉄長島駅", en: "Kintetsu Nagashima Station" },
+  },
+  "sapporo-white": {
+    coord: { lng: 141.351, lat: 43.059 },
+    label: { ko: "지하철 오도리역", ja: "地下鉄大通駅", en: "Subway Odori Station" },
+  },
+  "wakayama-keyaki": {
+    coord: { lng: 135.191, lat: 34.232 },
+    label: { ko: "JR 와카야마역", ja: "JR和歌山駅", en: "JR Wakayama Station" },
+  },
+  "osaka-renaissance": {
+    coord: { lng: 135.49, lat: 34.693 },
+    label: { ko: "나니와바시역", ja: "なにわ橋駅", en: "Naniwabashi Station" },
+  },
   "huistenbosch-kyushu": {
     coord: { lng: 129.7903, lat: 33.0864 },
     label: { ko: "JR 하우스텐보스역", ja: "JRハウステンボス駅", en: "JR Huis Ten Bosch Station" },

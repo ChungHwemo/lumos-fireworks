@@ -10,7 +10,7 @@ import {
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
 import { areaLabel, festivalArea, festivalPlace } from "../../domain/area.ts";
-import { formatClock, isFestivalDay } from "../../domain/festival.ts";
+import { isFestivalDay } from "../../domain/festival.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { filterSpotsByText } from "../../domain/spot.ts";
 import { festivalStationPoint } from "../../domain/station.ts";
@@ -19,6 +19,7 @@ import { festivalIcs, icsDataUrl } from "../calendar.ts";
 import { SEAT_COPY } from "../content.ts";
 import {
   LocalName,
+  festivalClock,
   festivalRainNote,
   festivalStationPair,
   festivalTitle,
@@ -141,6 +142,7 @@ export function FestivalPage() {
         showCrowd={showCrowd && !inSettings}
         fireworks={showFireworks}
         fireworksSeed={festival.id}
+        kind={festival.kind}
         style={mapStyleId}
         onSelect={onSelect}
         onMapClick={onMapClick}
@@ -150,6 +152,7 @@ export function FestivalPage() {
         controls={showControls}
         crowd={showCrowd}
         fireworks={showFireworks}
+        sparkLabel={festival.kind === "illumination" ? t.overlayLights : undefined}
         style={mapStyleId}
         onToggle={onToggle}
         onStyle={onStyle}
@@ -178,7 +181,7 @@ export function FestivalPage() {
           <li>
             <Icon name="clock" />
             <span>
-              {formatClock(festival.startTime, festival.endTime, festival.timeBasis)}{" "}
+              {festivalClock(festival, lang)}{" "}
               {festival.timeBasis === "prior-year" && (
                 <span className="dim">{t.timePriorYear} · </span>
               )}

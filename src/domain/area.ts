@@ -85,6 +85,51 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
     },
   },
   {
+    re: /大通|오도리/,
+    place: {
+      coord: { lng: 141.351, lat: 43.059 },
+      ko: "삿포로 오도리",
+      ja: "札幌市大通",
+      en: "Odori, Sapporo",
+    },
+  },
+  {
+    re: /御堂筋|미도스지/,
+    place: {
+      coord: { lng: 135.501, lat: 34.682 },
+      ko: "오사카 미도스지",
+      ja: "大阪市御堂筋",
+      en: "Midosuji, Osaka",
+    },
+  },
+  {
+    re: /中之島|나카노시마/,
+    place: {
+      coord: { lng: 135.49, lat: 34.693 },
+      ko: "오사카 나카노시마",
+      ja: "大阪市中之島",
+      en: "Nakanoshima, Osaka",
+    },
+  },
+  {
+    re: /フラワーパーク|플라워파크/,
+    place: {
+      coord: { lng: 139.447, lat: 36.314 },
+      ko: "아시카가 플라워파크",
+      ja: "足利市フラワーパーク",
+      en: "Ashikaga Flower Park",
+    },
+  },
+  {
+    re: /なばな|나바나/,
+    place: {
+      coord: { lng: 136.696, lat: 35.03 },
+      ko: "구와나 나바나노사토",
+      ja: "桑名市なばなの里",
+      en: "Nabana no Sato, Kuwana",
+    },
+  },
+  {
     re: /ふじてん|후지텐/,
     place: {
       coord: { lng: 138.728, lat: 35.393 },
@@ -128,6 +173,9 @@ const CITIES: Record<string, Place> = {
   岐阜市: { coord: { lng: 136.761, lat: 35.423 }, ko: "기후시", ja: "岐阜市", en: "Gifu" },
   袋井市: { coord: { lng: 137.925, lat: 34.75 }, ko: "후쿠로이시", ja: "袋井市", en: "Fukuroi" },
   鳴沢村: { coord: { lng: 138.706, lat: 35.481 }, ko: "나루사와촌", ja: "鳴沢村", en: "Narusawa" },
+  桑名市: { coord: { lng: 136.694, lat: 35.062 }, ko: "구와나시", ja: "桑名市", en: "Kuwana" },
+  和歌山市: { coord: { lng: 135.171, lat: 34.23 }, ko: "와카야마시", ja: "和歌山市", en: "Wakayama" },
+  足利市: { coord: { lng: 139.449, lat: 36.34 }, ko: "아시카가시", ja: "足利市", en: "Ashikaga" },
 };
 
 const PREFECTURES: Record<string, Place> = {
@@ -149,6 +197,9 @@ const PREFECTURES: Record<string, Place> = {
   長崎県: { coord: { lng: 129.874, lat: 32.75 }, ko: "나가사키현", ja: "長崎県", en: "Nagasaki" },
   岐阜県: { coord: { lng: 136.722, lat: 35.391 }, ko: "기후현", ja: "岐阜県", en: "Gifu" },
   山梨県: { coord: { lng: 138.568, lat: 35.664 }, ko: "야마나시현", ja: "山梨県", en: "Yamanashi" },
+  三重県: { coord: { lng: 136.508, lat: 34.73 }, ko: "미에현", ja: "三重県", en: "Mie" },
+  和歌山県: { coord: { lng: 135.168, lat: 34.226 }, ko: "와카야마현", ja: "和歌山県", en: "Wakayama" },
+  栃木県: { coord: { lng: 139.884, lat: 36.566 }, ko: "도치기현", ja: "栃木県", en: "Tochigi" },
 };
 
 export function festivalArea(festival: AreaInput): FestivalArea {
