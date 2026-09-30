@@ -43,6 +43,12 @@ test("시드 카탈로그는 2026-09-04 이전 행사를 보여 주지 않는다
   expect(listed.some((festival) => festival.id === "hokkaido-geijutsu-2026")).toBe(
     true,
   );
+  expect(listed.some((festival) => festival.id === "atami-kaijo-2027-02-21")).toBe(
+    true,
+  );
+  expect(listed.some((festival) => festival.id === "nagara-hanabi-2027")).toBe(
+    true,
+  );
 });
 
 test("시드 전체는 참조와 거리가 맞는다", () => {

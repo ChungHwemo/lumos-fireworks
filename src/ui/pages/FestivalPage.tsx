@@ -10,7 +10,7 @@ import {
 } from "../../data/catalog.ts";
 import { loadReports } from "../../data/reports.ts";
 import { areaLabel, festivalArea, festivalPlace } from "../../domain/area.ts";
-import { isFestivalDay } from "../../domain/festival.ts";
+import { formatClock, isFestivalDay } from "../../domain/festival.ts";
 import { crowdHeat, listReports } from "../../domain/report.ts";
 import { filterSpotsByText } from "../../domain/spot.ts";
 import { festivalStationPoint } from "../../domain/station.ts";
@@ -178,7 +178,14 @@ export function FestivalPage() {
           <li>
             <Icon name="clock" />
             <span>
-              {festival.startTime}–{festival.endTime} <span className="dim">Asia/Tokyo</span>
+              {formatClock(festival.startTime, festival.endTime, festival.timeBasis)}{" "}
+              {festival.timeBasis === "prior-year" && (
+                <span className="dim">{t.timePriorYear} · </span>
+              )}
+              {festival.timeBasis === "unpublished-end" && (
+                <span className="dim">{t.timeEndOpen} · </span>
+              )}
+              <span className="dim">Asia/Tokyo</span>
             </span>
           </li>
           <li>
@@ -204,6 +211,9 @@ export function FestivalPage() {
           <li>
             <Icon name="umbrella" />
             <span>
+              {festival.scheduleStatus === "planned" && (
+                <span className="tag">{t.schedulePlanned}</span>
+              )}{" "}
               <span className={`tag tag-rain-${festival.rainPolicy}`}>
                 {rainLabel(festival.rainPolicy, t)}
               </span>

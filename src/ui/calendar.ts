@@ -61,8 +61,22 @@ export function festivalIcs(input: CalendarInput, stampedAt = new Date()): strin
   const start = jstToUtcStamp(input.date, input.startTime);
   let end = jstToUtcStamp(input.date, input.endTime);
   if (end <= start) {
-    const next = new Date(Date.UTC(...splitDate(input.date)) + 86_400_000);
-    end = jstToUtcStamp(next.toISOString().slice(0, 10), input.endTime);
+    if (input.endTime === input.startTime) {
+      const [hour, minute] = input.endTime.split(":").map(Number);
+      const total = hour * 60 + minute + 1;
+      const h = String(Math.floor(total / 60) % 24).padStart(2, "0");
+      const m = String(total % 60).padStart(2, "0");
+      const day =
+        total >= 24 * 60
+          ? new Date(Date.UTC(...splitDate(input.date)) + 86_400_000)
+              .toISOString()
+              .slice(0, 10)
+          : input.date;
+      end = jstToUtcStamp(day, `${h}:${m}`);
+    } else {
+      const next = new Date(Date.UTC(...splitDate(input.date)) + 86_400_000);
+      end = jstToUtcStamp(next.toISOString().slice(0, 10), input.endTime);
+    }
   }
   const pad = (n: number) => String(n).padStart(2, "0");
   const stamp =

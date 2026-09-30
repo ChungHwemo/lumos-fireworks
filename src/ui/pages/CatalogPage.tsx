@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals } from "../../data/catalog.ts";
 import { festivalPlace, prefectureLabel } from "../../domain/area.ts";
-import { isFestivalDay } from "../../domain/festival.ts";
+import { formatClock, isFestivalDay } from "../../domain/festival.ts";
 import { parseFromQuery } from "../../domain/query.ts";
 import type { FestivalRecord } from "../../domain/types.ts";
 import { LocalName, festivalStation, festivalTitle } from "../display.tsx";
@@ -182,7 +182,14 @@ export function CatalogPage() {
                     <p className="card-line">
                       <Icon name="pin" size={14} /> {festivalPlace(festival, lang)}
                       <span className="dot" />
-                      <Icon name="clock" size={14} /> {festival.startTime}–{festival.endTime}
+                      <Icon name="clock" size={14} />{" "}
+                      {formatClock(festival.startTime, festival.endTime, festival.timeBasis)}
+                      {festival.timeBasis === "prior-year" && (
+                        <span className="dim"> {t.timePriorYear}</span>
+                      )}
+                      {festival.timeBasis === "unpublished-end" && (
+                        <span className="dim"> {t.timeEndOpen}</span>
+                      )}
                       {festival.dateEnd ? (
                         <>
                           <span className="dot" />
@@ -192,6 +199,9 @@ export function CatalogPage() {
                     </p>
                     <p className="card-tags">
                       {isFestivalDay(festival, today) && <span className="tag tag-live">{t.today}</span>}
+                      {festival.scheduleStatus === "planned" && (
+                        <span className="tag">{t.schedulePlanned}</span>
+                      )}
                       <span className={`tag tag-rain-${festival.rainPolicy}`}>
                         {rainLabel(festival.rainPolicy, t)}
                       </span>

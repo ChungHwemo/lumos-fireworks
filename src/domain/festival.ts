@@ -40,6 +40,16 @@ export function listFestivalDates(
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/** 종료가 시작과 같거나 미발표면 시작만 보여 준다. */
+export function formatClock(
+  start: string,
+  end: string,
+  basis?: "official" | "prior-year" | "unpublished-end",
+): string {
+  if (basis === "unpublished-end" || start === end) return start;
+  return `${start}–${end}`;
+}
+
 export function isFestivalDay(festival: Festival, now: Date): boolean {
   const tokyoDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Tokyo",

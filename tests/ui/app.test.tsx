@@ -48,7 +48,7 @@ test("목록은 기준일 이후 행사만 날짜순으로 보여 준다", () =>
 });
 
 test("필터는 URL 에서 읽고, 결과가 없으면 초기화 버튼을 보여 준다", () => {
-  mount("/?from=2027-01-01");
+  mount("/?from=2028-01-01");
   expect(screen.getByRole("status").textContent).toMatch(/행사가 없습니다/);
   fireEvent.click(screen.getByRole("button", { name: /필터 초기화/ }));
   expect(screen.getAllByRole("listitem").length).toBeGreaterThan(10);
@@ -165,6 +165,25 @@ test("제보는 본문이 비면 저장하지 않고 안내를 띄운다", async
   expect(screen.queryByRole("alert")).toBeNull();
   expect(screen.getByText("모래사장 절반 찼어요")).toBeTruthy();
   expect(JSON.parse(localStorage.getItem("hanabi-reports-v1") ?? "[]")).toHaveLength(1);
+});
+
+test("후쿠로이는 예정과 전년 시각을 보여주고 나가라에는 예정 배지가 없다", async () => {
+  const fukuroi = mount("/e/fukuroi-enshu-2027");
+  await screen.findByRole("heading", { name: /후쿠로이 엔슈 불꽃놀이/ });
+  expect(screen.getByText("예정")).toBeTruthy();
+  expect(screen.getByText(/시각은 전년 공식/)).toBeTruthy();
+  fukuroi.unmount();
+
+  const nagara = mount("/e/nagara-hanabi-2027");
+  await screen.findByRole("heading", { name: /기후 나가라강 불꽃놀이/ });
+  expect(screen.queryByText("예정")).toBeNull();
+  expect(screen.getByText(/시각은 전년 공식/)).toBeTruthy();
+  nagara.unmount();
+
+  mount("/e/zekkei-mtfuji-2027");
+  await screen.findByRole("heading", { name: /절경 불꽃/ });
+  expect(screen.getByText(/종료 미발표/)).toBeTruthy();
+  expect(screen.queryByText("18:30–19:30")).toBeNull();
 });
 
 test("렌더 에러는 경계가 받아 목록 링크를 남긴다", () => {

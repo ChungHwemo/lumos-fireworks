@@ -73,6 +73,10 @@ export type FestivalRecord = Festival & {
   shellsApprox: number | null;
   nearestStationKo: string;
   disclaimerKo: string;
+  /** official: 올해 주최 시각. prior-year: 전년 공식 시각. unpublished-end: 시작만 공식. */
+  timeBasis?: "official" | "prior-year" | "unpublished-end";
+  /** 주최가 개최 예정이라고 쓴 날. 없으면 날짜가 확정된 것으로 본다. */
+  scheduleStatus?: "planned";
 };
 
 export type SpotRecord = Coord & {

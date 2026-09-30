@@ -36,6 +36,13 @@ test("VEVENT 에 시작·끝·제목·좌표가 들어가고 특수문자는 이
   expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
 });
 
+test("종료를 시작과 같게 두면 다음 날로 넘기지 않고 1분만 잡는다", () => {
+  const ics = festivalIcs({ ...BASE, startTime: "18:30", endTime: "18:30" });
+  const unfolded = ics.replace(/\r\n /g, "");
+  expect(unfolded).toContain("DTSTART:20260913T093000Z");
+  expect(unfolded).toContain("DTEND:20260913T093100Z");
+});
+
 test("끝 시각이 시작보다 이르면 다음 날로 넘긴다", () => {
   const ics = festivalIcs({ ...BASE, startTime: "23:30", endTime: "00:20" });
   expect(ics).toContain("DTSTART:20260913T143000Z");

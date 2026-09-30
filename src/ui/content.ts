@@ -220,6 +220,46 @@ const FESTIVALS: Record<string, FestivalCopy> = {
     rainJa: "トップページに雨天の記載がない。公式を再確認。",
     rainEn: "Rain is not on the top page. Recheck official notes.",
   },
+  "yokohama-nightflowers": {
+    nameEn: "Yokohama Night Flowers",
+    venueEn: "Yokohama Port",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "当日の天候で中止あり。19:00打上げは14:00と18:00に公式で可否を出す。",
+    rainEn: "May be cancelled for weather. For a 19:00 launch, the official site posts a decision at 14:00 and 18:00.",
+  },
+  "fuji-speedway-hanabi": {
+    nameEn: "Mt. Fuji Fireworks vs Speedway",
+    venueEn: "Fuji Speedway",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "荒天の場合中止。花火は19:00–20:00予定。",
+    rainEn: "Cancelled in bad weather. Fireworks scheduled 19:00–20:00.",
+  },
+  "zekkei-mtfuji": {
+    nameEn: "The Superb View Fireworks Mt. Fuji",
+    venueEn: "Fujiten Resort",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "雨天の記載はない。開演18:30のみ公式。終演は未発表。",
+    rainEn: "No rain rule on the page. Only the 18:30 start is official. End time is unpublished.",
+  },
+  "nagara-hanabi": {
+    nameEn: "Gifu Nagara River Fireworks",
+    venueEn: "Nagara River, Gifu",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "荒天・増水時は2027-08-28に延期。再延期なし。時刻は2026公式の19:30–20:40。2027時刻は春発表。",
+    rainEn: "Storm or high water moves it to 28 Aug 2027. No second backup. 19:30–20:40 is the 2026 official window. The 2027 clock comes in spring.",
+  },
+  "fukuroi-enshu": {
+    nameEn: "Fukuroi Enshu Fireworks",
+    venueEn: "Haranoya River park, Fukuroi",
+    stationJa: "公式の交通案内",
+    stationEn: "See official transit notes",
+    rainJa: "2027の雨天は未発表。19:20–21:00はサイトのプログラム表で、2027告知は日付のみ。",
+    rainEn: "2027 rain rule is unpublished. 19:20–21:00 is the program table on the site. The 2027 notice gives the date only.",
+  },
 };
 
 export function festivalCopy(seriesId: string): FestivalCopy {

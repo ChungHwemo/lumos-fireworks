@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { isFestivalDay, listFestivalDates, listFestivals } from "../../src/domain/festival.ts";
+import { formatClock, isFestivalDay, listFestivalDates, listFestivals } from "../../src/domain/festival.ts";
 
 const FIXTURE = [
   {
@@ -131,4 +131,10 @@ test("시즌 행사는 남기되 지난 시작일로 목록 맨 위에 오지 �
     "atami-kaijo-2026-09-13",
     "atami-kaijo-2026-10-12",
   ]);
+});
+
+test("종료 미발표는 시작만 보여주고 전년 시각은 구간을 남긴다", () => {
+  expect(formatClock("18:30", "18:30", "unpublished-end")).toBe("18:30");
+  expect(formatClock("19:30", "20:40", "prior-year")).toBe("19:30–20:40");
+  expect(formatClock("20:20", "20:40")).toBe("20:20–20:40");
 });

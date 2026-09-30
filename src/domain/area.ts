@@ -75,6 +75,24 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
       en: "Kamioka / Nangai, Daisen",
     },
   },
+  {
+    re: /長良川|나가라/,
+    place: {
+      coord: { lng: 136.771, lat: 35.434 },
+      ko: "기후시 나가라강",
+      ja: "岐阜市長良川",
+      en: "Nagara River, Gifu",
+    },
+  },
+  {
+    re: /ふじてん|후지텐/,
+    place: {
+      coord: { lng: 138.728, lat: 35.393 },
+      ko: "나루사와 후지텐",
+      ja: "鳴沢村ふじてん",
+      en: "Fujiten, Narusawa",
+    },
+  },
 ];
 
 function matchDistrict(festival: Pick<AreaInput, "venueJa" | "venueKo">): Place | undefined {
@@ -105,6 +123,11 @@ const CITIES: Record<string, Place> = {
   土浦市: { coord: { lng: 140.2026, lat: 36.0781 }, ko: "츠치우라시", ja: "土浦市", en: "Tsuchiura" },
   大府市: { coord: { lng: 136.9631, lat: 35.012 }, ko: "오부시", ja: "大府市", en: "Obu" },
   佐世保市: { coord: { lng: 129.715, lat: 33.1797 }, ko: "사세보시", ja: "佐世保市", en: "Sasebo" },
+  横浜市: { coord: { lng: 139.642, lat: 35.45 }, ko: "요코하마시", ja: "横浜市", en: "Yokohama" },
+  小山町: { coord: { lng: 138.987, lat: 35.36 }, ko: "오야마정", ja: "小山町", en: "Oyama" },
+  岐阜市: { coord: { lng: 136.761, lat: 35.423 }, ko: "기후시", ja: "岐阜市", en: "Gifu" },
+  袋井市: { coord: { lng: 137.925, lat: 34.75 }, ko: "후쿠로이시", ja: "袋井市", en: "Fukuroi" },
+  鳴沢村: { coord: { lng: 138.706, lat: 35.481 }, ko: "나루사와촌", ja: "鳴沢村", en: "Narusawa" },
 };
 
 const PREFECTURES: Record<string, Place> = {
@@ -124,6 +147,8 @@ const PREFECTURES: Record<string, Place> = {
   大阪府: { coord: { lng: 135.52, lat: 34.686 }, ko: "오사카부", ja: "大阪府", en: "Osaka" },
   愛知県: { coord: { lng: 136.907, lat: 35.18 }, ko: "아이치현", ja: "愛知県", en: "Aichi" },
   長崎県: { coord: { lng: 129.874, lat: 32.75 }, ko: "나가사키현", ja: "長崎県", en: "Nagasaki" },
+  岐阜県: { coord: { lng: 136.722, lat: 35.391 }, ko: "기후현", ja: "岐阜県", en: "Gifu" },
+  山梨県: { coord: { lng: 138.568, lat: 35.664 }, ko: "야마나시현", ja: "山梨県", en: "Yamanashi" },
 };
 
 export function festivalArea(festival: AreaInput): FestivalArea {
