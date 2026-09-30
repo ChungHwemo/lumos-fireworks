@@ -19,12 +19,10 @@ const LookPage = lazy(() =>
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/** 예전 주황·남색·금 얼룩. 위치와 색이 천천히 움직인다. */
+/** 밤하늘 가장자리의 따뜻한 잔광 하나. 색이 돌거나 남색이 섞이지 않는다. */
 export function Atmosphere() {
   return (
     <div className="aurora" aria-hidden="true">
-      <i />
-      <i />
       <i />
     </div>
   );
