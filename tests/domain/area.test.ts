@@ -75,6 +75,13 @@ test("시드 카타카이 행사도 片貝로 연다", () => {
   expect(area.label.ko).toContain("카타카이");
 });
 
+test("게야키 대로는 삿포로 오도리로 오인하지 않는다", () => {
+  const festival = festivals.find((row) => row.id === "wakayama-keyaki-2026");
+  expect(festival).toBeTruthy();
+  expect(festivalPlace(festival!, "ja")).toBe("和歌山県 和歌山市");
+  expect(festivalArea(festival!).label.ja).not.toContain("札幌");
+});
+
 test("시드 행사는 전부 대략 위치를 갖는다", () => {
   for (const festival of festivals) {
     const area = festivalArea(festival);

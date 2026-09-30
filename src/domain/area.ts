@@ -85,7 +85,7 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
     },
   },
   {
-    re: /大通|오도리/,
+    re: /大通・|大通公園|오도리/,
     place: {
       coord: { lng: 141.351, lat: 43.059 },
       ko: "삿포로 오도리",
