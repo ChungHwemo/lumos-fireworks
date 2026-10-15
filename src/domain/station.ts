@@ -79,8 +79,12 @@ const STATIONS: Record<string, StationPoint> = {
     label: { ko: "JR 요네자와역", ja: "JR米沢駅", en: "JR Yonezawa Station" },
   },
   "yodogawa-hanabi": {
-    coord: { lng: 135.4989, lat: 34.7335 },
-    label: { ko: "JR 신오사카역", ja: "JR新大阪駅", en: "JR Shin-Osaka Station" },
+    coord: { lng: 135.4824, lat: 34.7208 },
+    label: { ko: "한큐 주소역", ja: "阪急十三駅", en: "Hankyu Juso Station" },
+  },
+  "osaka-geijutsu": {
+    coord: { lng: 135.299, lat: 34.411 },
+    label: { ko: "JR·난카이 린쿠타운역", ja: "JR・南海りんくうタウン駅", en: "JR / Nankai Rinku-Town Station" },
   },
   kukinoumi: {
     coord: { lng: 130.8061, lat: 33.9014 },

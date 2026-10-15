@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 import { listFestivals } from "../../src/domain/festival.ts";
 import { assertCatalogIntegrity } from "../../src/domain/integrity.ts";
+import { FROM_DEFAULT } from "../../src/domain/query.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -49,6 +50,30 @@ test("시드 카탈로그는 2026-09-04 이전 행사를 보여 주지 않는다
   expect(listed.some((festival) => festival.id === "nagara-hanabi-2027")).toBe(
     true,
   );
+});
+
+test("기본 from 은 2026-10-15 라 이미 끝난 하루 행사는 빠진다", () => {
+  const seed = loadJson<{ festivals: Array<{
+    id: string;
+    seriesId: string;
+    date: string;
+    dateEnd?: string;
+    prefecture: string;
+    city: string;
+    confirmation: "confirmed" | "unconfirmed";
+    paidSeats: boolean;
+    rainPolicy: "hold" | "cancel" | "postpone" | "unknown";
+    launch: { lng: number; lat: number } | null;
+  }> }>("docs/data/festivals.seed.json");
+  expect(FROM_DEFAULT).toBe("2026-10-15");
+  const listed = listFestivals(seed.festivals, {
+    from: FROM_DEFAULT,
+    confirmation: "confirmed",
+  });
+  expect(listed.some((festival) => festival.id === "sakata-hanabi-2026")).toBe(false);
+  expect(listed.some((festival) => festival.id === "yodogawa-2026")).toBe(true);
+  expect(listed.some((festival) => festival.id === "toya-longrun-2026")).toBe(true);
+  expect(listed.some((festival) => festival.id === "osaka-geijutsu-2026")).toBe(true);
 });
 
 test("시드 전체는 참조와 거리가 맞는다", () => {

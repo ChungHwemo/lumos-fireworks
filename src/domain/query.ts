@@ -1,4 +1,4 @@
-export const FROM_DEFAULT = "2026-09-04";
+export const FROM_DEFAULT = "2026-10-15";
 
 export function parseFromQuery(
   raw: string | null,

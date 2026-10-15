@@ -49,6 +49,33 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
     },
   },
   {
+    re: /橿原運動公園|카시하라 운동공원/,
+    place: {
+      coord: { lng: 135.792, lat: 34.491 },
+      ko: "카시하라 운동공원",
+      ja: "橿原市運動公園",
+      en: "Kashihara Sports Park",
+    },
+  },
+  {
+    re: /成田ニュータウン|나리타 뉴타운/,
+    place: {
+      coord: { lng: 140.318, lat: 35.776 },
+      ko: "나리타 뉴타운",
+      ja: "成田市ニュータウン",
+      en: "Narita New Town",
+    },
+  },
+  {
+    re: /りんくう|린쿠/,
+    place: {
+      coord: { lng: 135.296, lat: 34.408 },
+      ko: "이즈미사노 린쿠 공원",
+      ja: "泉佐野市りんくう公園",
+      en: "Rinku Park, Izumisano",
+    },
+  },
+  {
     re: /淀川|요도가와/,
     place: {
       coord: { lng: 135.486, lat: 34.738 },
@@ -138,6 +165,33 @@ const DISTRICTS: { re: RegExp; place: Place }[] = [
       en: "Fujiten, Narusawa",
     },
   },
+  {
+    re: /荒川運動公園|아라카와 운동공원/,
+    place: {
+      coord: { lng: 139.736, lat: 35.802 },
+      ko: "가와구치 아라카와 운동공원",
+      ja: "川口市荒川運動公園",
+      en: "Arakawa Sports Park, Kawaguchi",
+    },
+  },
+  {
+    re: /サマーランド|서머랜드/,
+    place: {
+      coord: { lng: 139.264, lat: 35.748 },
+      ko: "아키루노 서머랜드",
+      ja: "あきる野市サマーランド",
+      en: "Tokyo Summerland, Akiruno",
+    },
+  },
+  {
+    re: /伊万里港|이마리항/,
+    place: {
+      coord: { lng: 129.848, lat: 33.318 },
+      ko: "이마리항",
+      ja: "伊万里市伊万里港",
+      en: "Imari Port",
+    },
+  },
 ];
 
 function matchDistrict(festival: Pick<AreaInput, "venueJa" | "venueKo">): Place | undefined {
@@ -164,6 +218,7 @@ const CITIES: Record<string, Place> = {
   城陽市: { coord: { lng: 135.78, lat: 34.8531 }, ko: "조요시", ja: "城陽市", en: "Joyo" },
   米沢市: { coord: { lng: 140.1167, lat: 37.9222 }, ko: "요네자와시", ja: "米沢市", en: "Yonezawa" },
   大阪市: { coord: { lng: 135.5023, lat: 34.6937 }, ko: "오사카시", ja: "大阪市", en: "Osaka" },
+  泉佐野市: { coord: { lng: 135.327, lat: 34.406 }, ko: "이즈미사노시", ja: "泉佐野市", en: "Izumisano" },
   北九州市: { coord: { lng: 130.8752, lat: 33.8834 }, ko: "기타큐슈시", ja: "北九州市", en: "Kitakyushu" },
   土浦市: { coord: { lng: 140.2026, lat: 36.0781 }, ko: "츠치우라시", ja: "土浦市", en: "Tsuchiura" },
   大府市: { coord: { lng: 136.9631, lat: 35.012 }, ko: "오부시", ja: "大府市", en: "Obu" },
@@ -176,6 +231,11 @@ const CITIES: Record<string, Place> = {
   桑名市: { coord: { lng: 136.694, lat: 35.062 }, ko: "구와나시", ja: "桑名市", en: "Kuwana" },
   和歌山市: { coord: { lng: 135.171, lat: 34.23 }, ko: "와카야마시", ja: "和歌山市", en: "Wakayama" },
   足利市: { coord: { lng: 139.449, lat: 36.34 }, ko: "아시카가시", ja: "足利市", en: "Ashikaga" },
+  橿原市: { coord: { lng: 135.793, lat: 34.509 }, ko: "카시하라시", ja: "橿原市", en: "Kashihara" },
+  成田市: { coord: { lng: 140.318, lat: 35.776 }, ko: "나리타시", ja: "成田市", en: "Narita" },
+  川口市: { coord: { lng: 139.724, lat: 35.808 }, ko: "가와구치시", ja: "川口市", en: "Kawaguchi" },
+  あきる野市: { coord: { lng: 139.294, lat: 35.729 }, ko: "아키루노시", ja: "あきる野市", en: "Akiruno" },
+  伊万里市: { coord: { lng: 129.881, lat: 33.265 }, ko: "이마리시", ja: "伊万里市", en: "Imari" },
 };
 
 const PREFECTURES: Record<string, Place> = {
@@ -195,6 +255,10 @@ const PREFECTURES: Record<string, Place> = {
   大阪府: { coord: { lng: 135.52, lat: 34.686 }, ko: "오사카부", ja: "大阪府", en: "Osaka" },
   愛知県: { coord: { lng: 136.907, lat: 35.18 }, ko: "아이치현", ja: "愛知県", en: "Aichi" },
   長崎県: { coord: { lng: 129.874, lat: 32.75 }, ko: "나가사키현", ja: "長崎県", en: "Nagasaki" },
+  奈良県: { coord: { lng: 135.833, lat: 34.685 }, ko: "나라현", ja: "奈良県", en: "Nara" },
+  千葉県: { coord: { lng: 140.123, lat: 35.605 }, ko: "치바현", ja: "千葉県", en: "Chiba" },
+  埼玉県: { coord: { lng: 139.649, lat: 35.857 }, ko: "사이타마현", ja: "埼玉県", en: "Saitama" },
+  佐賀県: { coord: { lng: 130.299, lat: 33.264 }, ko: "사가현", ja: "佐賀県", en: "Saga" },
   岐阜県: { coord: { lng: 136.722, lat: 35.391 }, ko: "기후현", ja: "岐阜県", en: "Gifu" },
   山梨県: { coord: { lng: 138.568, lat: 35.664 }, ko: "야마나시현", ja: "山梨県", en: "Yamanashi" },
   三重県: { coord: { lng: 136.508, lat: 34.73 }, ko: "미에현", ja: "三重県", en: "Mie" },

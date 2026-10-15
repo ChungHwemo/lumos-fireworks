@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { festivalIcs, icsDataUrl, jstToUtcStamp } from "../../src/ui/calendar.ts";
+import { festivalIcs, festivalsIcs, icsDataUrl, jstToUtcStamp } from "../../src/ui/calendar.ts";
 
 test("도쿄 시각은 9시간 빼서 UTC 스탬프가 된다", () => {
   expect(jstToUtcStamp("2026-09-13", "20:20")).toBe("20260913T112000Z");
@@ -61,6 +61,19 @@ test("긴 줄은 75옥텟 안에서 접히고 이어지는 줄은 공백으로 �
   // 접힌 줄을 풀면 원문이 그대로 나온다.
   const unfolded = ics.replace(/\r\n /g, "");
   expect(unfolded).toContain(`DESCRIPTION:${"가".repeat(200)}`);
+});
+
+test("보이는 목록은 달력 하나에 행사마다 들어간다", () => {
+  const ics = festivalsIcs(
+    [
+      BASE,
+      { ...BASE, id: "second", title: "둘째" },
+    ],
+    new Date("2026-09-04T00:00:00Z"),
+  );
+  expect(ics.match(/BEGIN:VCALENDAR/g)).toHaveLength(1);
+  expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+  expect(ics).toContain("UID:second@hanabi");
 });
 
 test("data URL 은 text/calendar 다", () => {

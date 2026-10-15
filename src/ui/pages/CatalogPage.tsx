@@ -1,17 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { catalogFestivals } from "../../data/catalog.ts";
 import { festivalPlace, prefectureLabel } from "../../domain/area.ts";
 import { isFestivalDay } from "../../domain/festival.ts";
 import { parseFromQuery } from "../../domain/query.ts";
 import type { FestivalRecord } from "../../domain/types.ts";
-import { LocalName, festivalClock, festivalStation, festivalTitle } from "../display.tsx";
+import {
+  LocalName,
+  festivalClock,
+  festivalRainNote,
+  festivalStation,
+  festivalTitle,
+  festivalVenue,
+} from "../display.tsx";
 import { weekday } from "../i18n.ts";
 import { Icon } from "../Icon.tsx";
 import { monthLabel, rainLabel, shortMonth } from "../labels.ts";
 import { useLang } from "../Lang.tsx";
 import { LangSwitch } from "../LangSwitch.tsx";
 import { ThemeToggle } from "../ThemeSwitch.tsx";
+import { festivalsIcs, icsDataUrl } from "../calendar.ts";
 import { flag, useUpdateParams } from "../searchParams.ts";
 import { useDocumentTitle } from "../useDocumentTitle.ts";
 
@@ -26,7 +34,17 @@ export function CatalogPage() {
   const holdOnly = flag(params, "hold", false);
   const paidOnly = flag(params, "paid", false);
   const pref = params.get("pref") ?? "";
-  const filtered = holdOnly || paidOnly || pref !== "" || params.has("from");
+  const kindParam = params.get("kind");
+  const kind = kindParam === "hanabi" || kindParam === "illumination" ? kindParam : "";
+  const urlQ = params.get("q") ?? "";
+  const q = urlQ.trim();
+  const [draft, setDraft] = useState(urlQ);
+  const composing = useRef(false);
+  useEffect(() => {
+    if (!composing.current) setDraft(urlQ);
+  }, [urlQ]);
+  const filtered =
+    holdOnly || paidOnly || pref !== "" || kind !== "" || q !== "" || params.has("from");
 
   const upcoming = useMemo(
     () =>
@@ -39,10 +57,27 @@ export function CatalogPage() {
   );
   // 현 목록은 남은 행사에서만 뽑는다. 이미 끝난 현을 골라 빈 화면을 보는 일이 없다.
   const prefs = useMemo(
-    () => [...new Set(upcoming.map((festival) => festival.prefecture))].sort(),
-    [upcoming],
+    () =>
+      [
+        ...new Set(
+          upcoming
+            .filter((festival) => !kind || (festival.kind ?? "hanabi") === kind)
+            .map((festival) => festival.prefecture),
+        ),
+      ].sort(),
+    [upcoming, kind],
   );
-  const rows = pref ? upcoming.filter((festival) => festival.prefecture === pref) : upcoming;
+  const rows = upcoming.filter((festival) => {
+    const festivalKind = festival.kind ?? "hanabi";
+    if (kind && festivalKind !== kind) return false;
+    if (pref && festival.prefecture !== pref) return false;
+    if (!q) return true;
+    const title = festivalTitle(festival, lang);
+    const hay = [title.primary, title.ko, title.ja, title.en, festival.venueKo, festival.venueJa, festival.city]
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(q.toLowerCase());
+  });
 
   // 달 단위로 묶는다. 시즌 행사는 아직 남은 첫 날(from) 기준으로 놓인다.
   const groups = useMemo(() => {
@@ -58,6 +93,26 @@ export function CatalogPage() {
   }, [rows, from]);
 
   const today = new Date();
+  const listIcs = useMemo(
+    () =>
+      icsDataUrl(
+        festivalsIcs(
+          rows.map((festival) => ({
+            id: festival.id,
+            date: festival.date,
+            startTime: festival.startTime,
+            endTime: festival.endTime,
+            officialUrl: festival.officialUrl,
+            venueJa: festival.venueJa,
+            title: festivalTitle(festival, lang).primary,
+            description: `${rainLabel(festival.rainPolicy, t)} — ${festivalRainNote(festival, lang)}. ${t.unofficial}`,
+            location: `${festivalVenue(festival, lang).primary}, ${festivalPlace(festival, lang)}`,
+            launch: festival.launch,
+          })),
+        ),
+      ),
+    [rows, lang, t],
+  );
 
   return (
     <main className="page page-list">
@@ -107,6 +162,47 @@ export function CatalogPage() {
         >
           <Icon name="ticket" size={15} /> {t.paidOnly}
         </button>
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={kind === "hanabi"}
+          onClick={() => update({ kind: kind === "hanabi" ? null : "hanabi" })}
+        >
+          <Icon name="spark" size={15} /> {t.kindHanabi}
+        </button>
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={kind === "illumination"}
+          onClick={() => update({ kind: kind === "illumination" ? null : "illumination" })}
+        >
+          <Icon name="spark" size={15} /> {t.kindIllumination}
+        </button>
+        <label className="chip chip-input">
+          <Icon name="filter" size={15} />
+          <span className="sr-only">{t.searchCatalog}</span>
+          <input
+            type="search"
+            value={draft}
+            aria-label={t.searchCatalog}
+            placeholder={t.searchCatalog}
+            onCompositionStart={() => {
+              composing.current = true;
+            }}
+            onCompositionEnd={(event) => {
+              composing.current = false;
+              const value = event.currentTarget.value;
+              setDraft(value);
+              update({ q: value.trim() ? value : null });
+            }}
+            onChange={(event) => {
+              const value = event.target.value;
+              setDraft(value);
+              if (composing.current) return;
+              update({ q: value.trim() ? value : null });
+            }}
+          />
+        </label>
         <label className="chip chip-input">
           <Icon name="pin" size={15} />
           <select
@@ -126,7 +222,7 @@ export function CatalogPage() {
           <button
             type="button"
             className="chip chip-ghost"
-            onClick={() => update({ from: null, hold: null, paid: null, pref: null })}
+            onClick={() => update({ from: null, hold: null, paid: null, pref: null, kind: null, q: null })}
           >
             <Icon name="close" size={14} /> {t.resetFilters}
           </button>
@@ -141,10 +237,15 @@ export function CatalogPage() {
           {t.noFestivals}
         </p>
       ) : (
-        <p className="count" role="status">
-          {rows.length}
-          {t.festivalCount}
-        </p>
+        <div className="count-row">
+          <p className="count" role="status">
+            {rows.length}
+            {t.festivalCount}
+          </p>
+          <a className="chip chip-ghost" href={listIcs} download="hanabi.ics">
+            <Icon name="calendar" size={15} /> {t.addToCalendar}
+          </a>
+        </div>
       )}
       {groups.map((group) => (
         <section key={group.month} className="month">

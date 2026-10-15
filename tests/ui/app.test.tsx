@@ -43,7 +43,8 @@ test("목록은 기준일 이후 행사만 날짜순으로 보여 준다", () =>
   const sorted = dates.map((d, i) => (i === 0 ? d : d! >= dates[i - 1]! ? d : "BAD"));
   // 시즌 행사(도야코)는 시작일이 지났어도 맨 위에 남고, 그 뒤는 오름차순이다.
   expect(sorted.slice(1)).not.toContain("BAD");
-  expect(screen.getByText(/사카타 불꽃놀이/)).toBeTruthy();
+  expect(screen.getByText(/나니와 요도가와 불꽃놀이/)).toBeTruthy();
+  expect(screen.queryByText(/사카타 불꽃놀이/)).toBeNull();
   expect(screen.queryByText(/2026-09-03/)).toBeNull();
 });
 
@@ -58,11 +59,11 @@ test("필터는 URL 에서 읽고, 결과가 없으면 초기화 버튼을 보�
 test("목록은 달 단위로 묶이고 시즌 행사는 남은 첫 달에 놓인다", () => {
   mount("/");
   const months = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-  expect(months[0]).toBe("2026년 9월");
+  expect(months[0]).toBe("2026년 10월");
   expect(months).toContain("2026년 12월");
-  // 4월에 시작한 도야코 롱런은 9월 묶음 안에 있다.
-  const september = screen.getAllByRole("heading", { level: 3 })[0].parentElement!;
-  expect(within(september).getByText(/도야코 롱런 불꽃놀이/)).toBeTruthy();
+  // 4월에 시작한 도야코 롱런은 아직 끝나지 않아 10월 묶음에 있다.
+  const october = screen.getAllByRole("heading", { level: 3 })[0].parentElement!;
+  expect(within(october).getByText(/도야코 롱런 불꽃놀이/)).toBeTruthy();
 });
 
 test("행사 화면의 캘린더 링크는 ICS 데이터 URL 이다", async () => {
@@ -84,11 +85,23 @@ test("지도 칩은 URL 의 레이어 상태를 그대로 보여 준다", async 
   expect(within(group).getByRole("button", { name: "불꽃" }).getAttribute("aria-pressed")).toBe("false");
 });
 
-test("현 필터는 그 현만 남긴다", () => {
-  mount("/?pref=沖縄県");
+test("불꽃과 일루미네이션을 나누고 이름으로 찾는다", () => {
+  const view = mount("/?kind=illumination");
+  expect(screen.getByText(/나바나노사토 일루미네이션/)).toBeTruthy();
+  expect(screen.queryByText(/나니와 요도가와 불꽃놀이/)).toBeNull();
+  view.unmount();
+
+  mount("/?q=린쿠");
   const cards = screen.getAllByRole("listitem");
   expect(cards).toHaveLength(1);
-  expect(cards[0].textContent).toMatch(/오키나와현/);
+  expect(cards[0].textContent).toMatch(/오사카 예술불꽃/);
+});
+
+test("현 필터는 그 현만 남긴다", () => {
+  mount("/?pref=和歌山県");
+  const cards = screen.getAllByRole("listitem");
+  expect(cards).toHaveLength(1);
+  expect(cards[0].textContent).toMatch(/와카야마현/);
 });
 
 test("언어를 바꾸면 제목과 html lang 이 따라간다", () => {

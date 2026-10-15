@@ -4,8 +4,8 @@ import { parseFromQuery } from "../../src/domain/query.ts";
 import { filterSpotsByText } from "../../src/domain/spot.ts";
 
 test("from 쿼리가 날짜가 아니면 기본값을 쓴다", () => {
-  expect(parseFromQuery(null)).toBe("2026-09-04");
-  expect(parseFromQuery("nope")).toBe("2026-09-04");
+  expect(parseFromQuery(null)).toBe("2026-10-15");
+  expect(parseFromQuery("nope")).toBe("2026-10-15");
   expect(parseFromQuery("2026-10-01")).toBe("2026-10-01");
 });
 

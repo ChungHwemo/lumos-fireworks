@@ -163,6 +163,9 @@ button:disabled { cursor: progress; opacity: 0.6; }
   outline: none;
 }
 .chip-input input[type="date"] { width: 9.5rem; }
+.chip-input input[type="search"] { width: 8.5rem; }
+.count-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.25rem 0 0; }
+.count-row .count { margin: 0; }
 .chip-input select { max-width: 10rem; }
 .pill-primary, .primary {
   background: var(--accent);
@@ -657,7 +660,7 @@ button:disabled { cursor: progress; opacity: 0.6; }
 @media (max-width: 640px), (pointer: coarse) {
   .chip, .pill, .segmented button, .icon-btn, .link-btn, .report-form select, .report-form textarea { min-height: 44px; }
   .icon-btn { width: 44px; height: 44px; }
-  .chip-input input[type="date"] { min-height: 0; }
+  .chip-input input[type="date"], .chip-input input[type="search"] { min-height: 0; }
   .ctrl-group button { width: 44px; height: 44px; }
   .legend summary { min-height: 44px; }
   .lang-switch.is-compact .segmented button { min-height: 36px; }

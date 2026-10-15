@@ -57,7 +57,15 @@ export type CalendarInput = Pick<
  * 행사 하나를 VEVENT 로. 종료가 시작보다 이르면 자정을 넘긴 것으로 본다.
  * 시즌 행사(dateEnd)는 첫날 하나만 만든다. 날마다 시각이 같다는 보장이 없다.
  */
-export function festivalIcs(input: CalendarInput, stampedAt = new Date()): string {
+function stampOf(stampedAt: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${stampedAt.getUTCFullYear()}${pad(stampedAt.getUTCMonth() + 1)}${pad(stampedAt.getUTCDate())}` +
+    `T${pad(stampedAt.getUTCHours())}${pad(stampedAt.getUTCMinutes())}${pad(stampedAt.getUTCSeconds())}Z`
+  );
+}
+
+function veventLines(input: CalendarInput, stamp: string): string[] {
   const start = jstToUtcStamp(input.date, input.startTime);
   let end = jstToUtcStamp(input.date, input.endTime);
   if (end <= start) {
@@ -78,15 +86,7 @@ export function festivalIcs(input: CalendarInput, stampedAt = new Date()): strin
       end = jstToUtcStamp(next.toISOString().slice(0, 10), input.endTime);
     }
   }
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const stamp =
-    `${stampedAt.getUTCFullYear()}${pad(stampedAt.getUTCMonth() + 1)}${pad(stampedAt.getUTCDate())}` +
-    `T${pad(stampedAt.getUTCHours())}${pad(stampedAt.getUTCMinutes())}${pad(stampedAt.getUTCSeconds())}Z`;
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//hanabi//ko",
-    "CALSCALE:GREGORIAN",
+  return [
     "BEGIN:VEVENT",
     `UID:${input.id}@hanabi`,
     `DTSTAMP:${stamp}`,
@@ -98,9 +98,22 @@ export function festivalIcs(input: CalendarInput, stampedAt = new Date()): strin
     `URL:${input.officialUrl}`,
     ...(input.launch ? [`GEO:${input.launch.lat};${input.launch.lng}`] : []),
     "END:VEVENT",
-    "END:VCALENDAR",
   ];
+}
+
+function wrapCalendar(events: string[]): string {
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//hanabi//ko", "CALSCALE:GREGORIAN", ...events, "END:VCALENDAR"];
   return `${lines.map(fold).join("\r\n")}\r\n`;
+}
+
+export function festivalIcs(input: CalendarInput, stampedAt = new Date()): string {
+  return wrapCalendar(veventLines(input, stampOf(stampedAt)));
+}
+
+/** 지금 보이는 목록을 달력 하나에 담는다. 시즌 행사는 첫날만 넣는다. */
+export function festivalsIcs(inputs: CalendarInput[], stampedAt = new Date()): string {
+  const stamp = stampOf(stampedAt);
+  return wrapCalendar(inputs.flatMap((input) => veventLines(input, stamp)));
 }
 
 export function icsDataUrl(ics: string): string {

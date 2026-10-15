@@ -2,7 +2,7 @@ export type Lang = "ko" | "ja" | "en";
 
 const ko = {
   appTitle: "일본 불꽃놀이 지도",
-  appBlurb: "2026년 9월 4일 이후 남아 있는 일본 불꽃축제. 공식 앱이 아닙니다.",
+  appBlurb: "2026년 10월 15일 이후 남아 있는 일본 불꽃축제. 공식 앱이 아닙니다.",
   unofficial: "공식으로 제공하는 정보가 아닙니다. 일정·통제·유료석은 공식 페이지를 다시 확인하세요.",
   shareCopy: "친구에게 위치 공유하고 명당 찾기",
   catalog: "다가오는 행사",
@@ -90,6 +90,9 @@ const ko = {
   overlayFireworks: "불꽃",
   overlayLights: "일루미네이션",
   kindIllumination: "일루미네이션",
+  kindAll: "전체",
+  kindHanabi: "불꽃",
+  searchCatalog: "이름·장소",
   legend: "범례",
   legendSpotOpen: "설 수 있음",
   legendSpotPaid: "유료 게이트",
@@ -147,7 +150,7 @@ const ko = {
 
 const ja: Record<keyof typeof ko, string> = {
   appTitle: "日本花火マップ",
-  appBlurb: "2026年9月4日以降の花火大会。公式アプリではありません。",
+  appBlurb: "2026年10月15日以降の花火大会。公式アプリではありません。",
   unofficial: "公式情報ではありません。日程・規制・有料席は主催ページで再確認してください。",
   shareCopy: "位置を共有して、見物スポットを探す",
   catalog: "これから開催",
@@ -235,6 +238,9 @@ const ja: Record<keyof typeof ko, string> = {
   overlayFireworks: "花火",
   overlayLights: "イルミネーション",
   kindIllumination: "イルミネーション",
+  kindAll: "すべて",
+  kindHanabi: "花火",
+  searchCatalog: "名前・場所",
   legend: "凡例",
   legendSpotOpen: "立てる",
   legendSpotPaid: "有料ゲート",
@@ -292,7 +298,7 @@ const ja: Record<keyof typeof ko, string> = {
 
 const en: Record<keyof typeof ko, string> = {
   appTitle: "Japan fireworks map",
-  appBlurb: "Hanabi after 4 Sep 2026. Unofficial.",
+  appBlurb: "Hanabi after 15 Oct 2026. Unofficial.",
   unofficial:
     "This is not official. Recheck dates, controls, and paid seats on the organizer site.",
   shareCopy: "Share a pin and pick a viewing spot",
@@ -381,6 +387,9 @@ const en: Record<keyof typeof ko, string> = {
   overlayFireworks: "Fireworks",
   overlayLights: "Illumination",
   kindIllumination: "Illumination",
+  kindAll: "All",
+  kindHanabi: "Fireworks",
+  searchCatalog: "Name or place",
   legend: "Legend",
   legendSpotOpen: "Can stand here",
   legendSpotPaid: "Paid gate",
